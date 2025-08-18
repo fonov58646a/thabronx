@@ -1,5 +1,15 @@
+-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+-- VORTEX HUB V2.9 | ULTIMATE EDITION
+-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
 local Window = OrionLib:MakeWindow({Name = "VortX Hub - HyperShot", IntroEnabled = true, IntroText = "VortX Hub", ConfigFolder = "VortX Hub - HyperShot"})
+
+-- Anti-cheat bypass notification on load
+OrionLib:MakeNotification({
+    Name = "Anti-Cheat Bypass",
+    Content = "Anti cheat bypass By VortX Hub",
+    Time = 5
+})
 
 -- Services
 local UserInputService = game:GetService("UserInputService")
@@ -38,32 +48,21 @@ AimbotFOVCircle.Filled = false
 AimbotFOVCircle.Visible = false
 
 -- Tabs
-local Aimbot = Window:MakeTab({Name = "Aimbot", Icon = "rbxassetid://4483345875", PremiumOnly = false})
-local ESP = Window:MakeTab({Name = "ESP", Icon = "rbxassetid://4483345875", PremiumOnly = false})
-local AutoFeatures = Window:MakeTab({Name = "Auto Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
-local PickupFeatures = Window:MakeTab({Name = "Pickup Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
-local CombatFeatures = Window:MakeTab({Name = "Combat Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
-local UtilityFeatures = Window:MakeTab({Name = "Utility Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
-local Settings = Window:MakeTab({Name = "Settings", Icon = "rbxassetid://4483345875", PremiumOnly = false})
-
--- Settings GUI
-Settings:AddLabel("VortX Hub v1.5.0")
-Settings:AddLabel("Features:")
-Settings:AddLabel("• Aimbot with headshot prediction")
-Settings:AddLabel("• ESP with chams and highlights")
-Settings:AddLabel("• Auto revive, open chest, playtime, spin wheel, spawn")
-Settings:AddLabel("• Auto pickup (heal, coins, weapons, ammo)")
-Settings:AddLabel("• Rapid fire, head lock")
-Settings:AddLabel("• No cooldown, infinite projectile speed")
-Settings:AddButton("Copy Discord", function() setclipboard("discord.gg/VortX") end)
+local AimbotTab = Window:MakeTab({Name = "Aimbot", Icon = "rbxassetid://4483345875", PremiumOnly = false})
+local ESPTab = Window:MakeTab({Name = "ESP", Icon = "rbxassetid://4483345875", PremiumOnly = false})
+local AutoFeaturesTab = Window:MakeTab({Name = "Auto Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
+local PickupFeaturesTab = Window:MakeTab({Name = "Pickup Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
+local CombatFeaturesTab = Window:MakeTab({Name = "Combat Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
+local UtilityFeaturesTab = Window:MakeTab({Name = "Utility Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
+local SettingsTab = Window:MakeTab({Name = "Settings", Icon = "rbxassetid://4483345875", PremiumOnly = false})
 
 -- Toggle functions with implemented features
-Aimbot:AddToggle({Name = "Aimbot", Default = false, Callback = function(Value)
+AimbotTab:AddToggle({Name = "Aimbot", Default = false, Callback = function(Value)
     aimbotEnabled = Value
     AimbotFOVCircle.Visible = Value
 end})
 
-Aimbot:AddSlider({Name = "FOV", Min = 1, Max = 100, Default = 20, Callback = function(Value)
+AimbotTab:AddSlider({Name = "FOV", Min = 1, Max = 100, Default = 20, Callback = function(Value)
     aimbotFOV = Value
     AimbotFOVCircle.Radius = Value
 end})
@@ -99,7 +98,7 @@ task.spawn(function()
     end
 end)
 
-ESP:AddToggle({Name = "Enable ESP", Default = false, Callback = function(Value)
+ESPTab:AddToggle({Name = "Enable ESP", Default = false, Callback = function(Value)
     espEnabled = Value
 end})
 
@@ -153,7 +152,7 @@ task.spawn(function()
     end
 end)
 
-CombatFeatures:AddToggle({Name = "Head Lock", Default = false, Callback = function(Value)
+CombatFeaturesTab:AddToggle({Name = "Head Lock", Default = false, Callback = function(Value)
     headLockEnabled = Value
 end})
 
@@ -175,7 +174,7 @@ task.spawn(function()
     end
 end)
 
-CombatFeatures:AddToggle({Name = "Rapid Fire", Default = false, Callback = function(Value)
+CombatFeaturesTab:AddToggle({Name = "Rapid Fire", Default = false, Callback = function(Value)
     rapidFireEnabled = Value
 end})
 
@@ -202,7 +201,7 @@ task.spawn(function()
     end
 end)
 
-PickupFeatures:AddToggle({Name = "Auto Pickup Heal", Default = false, Callback = function(Value)
+PickupFeaturesTab:AddToggle({Name = "Auto Pickup Heal", Default = false, Callback = function(Value)
     autoPickupHealEnabled = Value
 end})
 
@@ -223,7 +222,7 @@ task.spawn(function()
     end
 end)
 
-PickupFeatures:AddToggle({Name = "Auto Pickup Coins", Default = false, Callback = function(Value)
+PickupFeaturesTab:AddToggle({Name = "Auto Pickup Coins", Default = false, Callback = function(Value)
     autoPickupCoinsEnabled = Value
 end})
 
@@ -244,7 +243,7 @@ task.spawn(function()
     end
 end)
 
-PickupFeatures:AddToggle({Name = "Auto Pickup Weapons", Default = false, Callback = function(Value)
+PickupFeaturesTab:AddToggle({Name = "Auto Pickup Weapons", Default = false, Callback = function(Value)
     autoPickupWeaponsEnabled = Value
 end})
 
@@ -265,7 +264,7 @@ task.spawn(function()
     end
 end)
 
-PickupFeatures:AddToggle({Name = "Auto Pickup Ammo", Default = false, Callback = function(Value)
+PickupFeaturesTab:AddToggle({Name = "Auto Pickup Ammo", Default = false, Callback = function(Value)
     autoPickupAmmoEnabled = Value
 end})
 
@@ -286,27 +285,27 @@ task.spawn(function()
     end
 end)
 
-AutoFeatures:AddToggle({Name = "Auto Revive", Default = false, Callback = function(Value)
+AutoFeaturesTab:AddToggle({Name = "Auto Revive", Default = false, Callback = function(Value)
     autoReviveEnabled = Value
 end})
 
-AutoFeatures:AddToggle({Name = "Auto Open Chest", Default = false, Callback = function(Value)
+AutoFeaturesTab:AddToggle({Name = "Auto Open Chest", Default = false, Callback = function(Value)
     autoOpenChestEnabled = Value
 end})
 
-AutoFeatures:AddToggle({Name = "Auto Playtime", Default = false, Callback = function(Value)
+AutoFeaturesTab:AddToggle({Name = "Auto Playtime", Default = false, Callback = function(Value)
     autoPlaytimeEnabled = Value
 end})
 
-AutoFeatures:AddToggle({Name = "Auto Spin Wheel", Default = false, Callback = function(Value)
+AutoFeaturesTab:AddToggle({Name = "Auto Spin Wheel", Default = false, Callback = function(Value)
     autoSpinWheelEnabled = Value
 end})
 
-AutoFeatures:AddToggle({Name = "Auto Spawn", Default = false, Callback = function(Value)
+AutoFeaturesTab:AddToggle({Name = "Auto Spawn", Default = false, Callback = function(Value)
     autoSpawnEnabled = Value
 end})
 
-UtilityFeatures:AddToggle({Name = "No Cooldown", Default = false, Callback = function(Value)
+UtilityFeaturesTab:AddToggle({Name = "No Cooldown", Default = false, Callback = function(Value)
     noCooldownEnabled = Value
     if Value then
         for _, v in next, getgc(true) do
@@ -317,7 +316,7 @@ UtilityFeatures:AddToggle({Name = "No Cooldown", Default = false, Callback = fun
     end
 end})
 
-UtilityFeatures:AddToggle({Name = "Infinite Projectile Speed", Default = false, Callback = function(Value)
+UtilityFeaturesTab:AddToggle({Name = "Infinite Projectile Speed", Default = false, Callback = function(Value)
     infiniteProjectileSpeedEnabled = Value
     if Value then
         for _, v in next, getgc(true) do

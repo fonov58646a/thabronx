@@ -384,7 +384,7 @@ end)
 task.spawn(function()
     while true do
         if autoPickupHealEnabled then
-            local healFolder = workspace:FindFirstChild("IgnoreThese") and workspace.IgnoreThese:FindFirstChild("Pickups") and workspace.IgnoreThese.Pickups:FindFirstChild("Heals")
+            local healFolder = workspace:FindFirstChild(" IgnoreThese") and workspace.IgnoreThese:FindFirstChild("Pickups") and workspace.IgnoreThese.Pickups:FindFirstChild("Heals")
             if healFolder then
                 for _, heal in ipairs(healFolder:GetChildren()) do
                     if heal:IsA("Model") or heal:IsA("Part") then

@@ -2,7 +2,7 @@
 -- Created with Orion Library
 
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-local Window = OrionLib:MakeWindow({Name = "VortX Hub - V1", IntroEnabled = true, IntroText = "VortX Hub", ConfigFolder = "VortX Hub - HyperShot"})
+local Window = OrionLib:MakeWindow({Name = "VortX Hub - HyperShot", IntroEnabled = true, IntroText = "VortX Hub", ConfigFolder = "VortX Hub - HyperShot"})
 
 -- Anti-cheat bypass notification
 OrionLib:MakeNotification({
@@ -71,7 +71,7 @@ local CombatFeaturesTab = Window:MakeTab({Name = "Combat Features", Icon = "rbxa
 local UtilityFeaturesTab = Window:MakeTab({Name = "Utility Features", Icon = "rbxassetid://4483345875", PremiumOnly = false})
 local InfoTab = Window:MakeTab({Name = "Info", Icon = "rbxassetid://4483345875", PremiumOnly = false})
 
--- Toggle functions
+-- Toggle functions for Aimbot Tab
 AimbotTab:AddToggle({Name = "Aimbot", Default = false, Callback = function(Value)
     aimbotEnabled = Value
     AimbotFOVCircle.Transparency = Value and 0.5 or 1
@@ -86,6 +86,7 @@ AimbotTab:AddToggle({Name = "Auto Fire", Default = false, Callback = function(Va
     autoFireEnabled = Value
 end})
 
+-- Toggle functions for ESP Tab
 ESPTab:AddToggle({Name = "Enable ESP", Default = false, Callback = function(Value)
     espEnabled = Value
 end})
@@ -102,6 +103,7 @@ ESPTab:AddToggle({Name = "Team Check", Default = false, Callback = function(Valu
     ESP_Config.TeamCheck = Value
 end})
 
+-- Toggle functions for Combat Features Tab
 CombatFeaturesTab:AddToggle({Name = "Head Lock", Default = false, Callback = function(Value)
     headLockEnabled = Value
 end})
@@ -110,6 +112,7 @@ CombatFeaturesTab:AddToggle({Name = "Rapid Fire", Default = false, Callback = fu
     rapidFireEnabled = Value
 end})
 
+-- Toggle functions for Pickup Features Tab
 PickupFeaturesTab:AddToggle({Name = "Auto Pickup Heal", Default = false, Callback = function(Value)
     autoPickupHealEnabled = Value
 end})
@@ -126,6 +129,7 @@ PickupFeaturesTab:AddToggle({Name = "Auto Pickup Ammo", Default = false, Callbac
     autoPickupAmmoEnabled = Value
 end})
 
+-- Toggle functions for Auto Features Tab
 AutoFeaturesTab:AddToggle({Name = "Auto Revive", Default = false, Callback = function(Value)
     autoReviveEnabled = Value
 end})
@@ -146,6 +150,7 @@ AutoFeaturesTab:AddToggle({Name = "Auto Spawn", Default = false, Callback = func
     autoSpawnEnabled = Value
 end})
 
+-- Toggle functions for Utility Features Tab
 UtilityFeaturesTab:AddToggle({Name = "No Cooldown", Default = false, Callback = function(Value)
     noCooldownEnabled = Value
     if Value then
@@ -425,13 +430,6 @@ task.spawn(function()
         
         task.wait(1)
     end
-end)
-
--- Keybinds
-OrionLib:OnInit(function()
-    OrionLib:OnKeyPressed(Enum.KeyCode.RightControl, function()
-        Window:Toggle()
-    end)
 end)
 
 -- Initialize OrionLib

@@ -2,7 +2,7 @@
 -- Created with Orion Library
 
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/1nig1htmare1234/SCRIPTS/main/Orion.lua"))()
-local Window = OrionLib:MakeWindow({Name = "VortX Hub - HyperShot", IntroEnabled = true, IntroText = "VortX Hub", ConfigFolder = "VortX Hub - HyperShot"})
+local Window = OrionLib:MakeWindow({Name = "VortX Hub - V1", IntroEnabled = true, IntroText = "VortX Hub", ConfigFolder = "VortX Hub - HyperShot"})
 
 -- Anti-cheat bypass notification
 OrionLib:MakeNotification({

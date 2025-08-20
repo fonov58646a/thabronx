@@ -21,6 +21,7 @@ local IntroFrame = Instance.new("Frame")
 local IntroTextLabel = Instance.new("TextLabel")
 local TabsFrame = Instance.new("Frame")
 local ContentFrame = Instance.new("Frame")
+local InfoTabContent = Instance.new("Frame")
 local LogoFrame = Instance.new("Frame")
 local LogoImage = Instance.new("ImageLabel")
 local DiscordButton = Instance.new("TextButton")
@@ -35,13 +36,17 @@ local CloseButton = Instance.new("TextButton")
 local UICorner6 = Instance.new("UICorner")
 local ExecutorLabel = Instance.new("TextLabel")
 local UserNameLabel = Instance.new("TextLabel")
-local InfoTabContent = Instance.new("Frame")
 local FeaturesTabContent = Instance.new("Frame")
 local SettingsTabContent = Instance.new("Frame")
 local SliderFrame = Instance.new("Frame")
 local SliderBackground = Instance.new("Frame")
 local SliderButton = Instance.new("TextButton")
 local UICorner7 = Instance.new("UICorner")
+local OwnerLabel = Instance.new("TextLabel")
+local UICorner8 = Instance.new("UICorner")
+local DiscordLinkLabel = Instance.new("TextLabel")
+local CopyDiscordButton = Instance.new("TextButton")
+local UICorner9 = Instance.new("UICorner")
 
 --====================--
 --== UI Properties ==--
@@ -126,20 +131,43 @@ InfoTabContent.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 InfoTabContent.Size = UDim2.new(1, 0, 1, 0)
 InfoTabContent.Visible = true
 
-UICorner7.CornerRadius = UDim.new(0, 10)
-UICorner7.Parent = InfoTabContent
+UICorner8.CornerRadius = UDim.new(0, 10)
+UICorner8.Parent = InfoTabContent
 
-local ownerLabel = Instance.new("TextLabel")
-ownerLabel.Name = "OwnerLabel"
-ownerLabel.Parent = InfoTabContent
-ownerLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-ownerLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
-ownerLabel.Position = UDim2.new(0.1, 0, 0.1, 0)
-ownerLabel.Font = Enum.Font.SourceSansSemibold
-ownerLabel.Text = "OWNER OF VORTX HUB"
-ownerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-ownerLabel.TextSize = 18.0
-ownerLabel.TextXAlignment = Enum.TextXAlignment.Center
+OwnerLabel.Name = "OwnerLabel"
+OwnerLabel.Parent = InfoTabContent
+OwnerLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+OwnerLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
+OwnerLabel.Position = UDim2.new(0.1, 0, 0.1, 0)
+OwnerLabel.Font = Enum.Font.SourceSansSemibold
+OwnerLabel.Text = "OWNER OF VORTX HUB: YourName"
+OwnerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+OwnerLabel.TextSize = 18.0
+OwnerLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+DiscordLinkLabel.Name = "DiscordLinkLabel"
+DiscordLinkLabel.Parent = InfoTabContent
+DiscordLinkLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+DiscordLinkLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
+DiscordLinkLabel.Position = UDim2.new(0.1, 0, 0.3, 0)
+DiscordLinkLabel.Font = Enum.Font.SourceSansSemibold
+DiscordLinkLabel.Text = "Discord Link:"
+DiscordLinkLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+DiscordLinkLabel.TextSize = 18.0
+DiscordLinkLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+CopyDiscordButton.Name = "CopyDiscordButton"
+CopyDiscordButton.Parent = InfoTabContent
+CopyDiscordButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+CopyDiscordButton.Position = UDim2.new(0.35, 0, 0.3, 0)
+CopyDiscordButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+CopyDiscordButton.Font = Enum.Font.SourceSans
+CopyDiscordButton.Text = "Copy Link"
+CopyDiscordButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+CopyDiscordButton.TextSize = 14.0
+
+UICorner9.CornerRadius = UDim.new(0, 10)
+UICorner9.Parent = CopyDiscordButton
 
 --====================--
 --== Features Tab Content ==--
@@ -151,9 +179,9 @@ FeaturesTabContent.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 FeaturesTabContent.Size = UDim2.new(1, 0, 1, 0)
 FeaturesTabContent.Visible = false
 
-UICorner8 = Instance.new("UICorner")
-UICorner8.CornerRadius = UDim.new(0, 10)
-UICorner8.Parent = FeaturesTabContent
+UICorner10 = Instance.new("UICorner")
+UICorner10.CornerRadius = UDim.new(0, 10)
+UICorner10.Parent = FeaturesTabContent
 
 --====================--
 --== Settings Tab Content ==--
@@ -165,9 +193,9 @@ SettingsTabContent.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 SettingsTabContent.Size = UDim2.new(1, 0, 1, 0)
 SettingsTabContent.Visible = false
 
-UICorner9 = Instance.new("UICorner")
-UICorner9.CornerRadius = UDim.new(0, 10)
-UICorner9.Parent = SettingsTabContent
+UICorner11 = Instance.new("UICorner")
+UICorner11.CornerRadius = UDim.new(0, 10)
+UICorner11.Parent = SettingsTabContent
 
 --====================--
 --== Logo Frame ==--
@@ -201,8 +229,9 @@ DiscordButton.Text = "Discord"
 DiscordButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 DiscordButton.TextSize = 14.0
 
-UICorner4.CornerRadius = UDim.new(0, 10)
-UICorner4.Parent = DiscordButton
+UICorner12 = Instance.new("UICorner")
+UICorner12.CornerRadius = UDim.new(0, 10)
+UICorner12.Parent = DiscordButton
 
 --====================--
 --== Toggle Button ==--
@@ -218,8 +247,9 @@ ToggleButton.Text = "OFF"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.TextSize = 14.0
 
-UICorner5.CornerRadius = UDim.new(0, 10)
-UICorner5.Parent = ToggleButton
+UICorner13 = Instance.new("UICorner")
+UICorner13.CornerRadius = UDim.new(0, 10)
+UICorner13.Parent = ToggleButton
 
 --====================--
 --== Minimize Button ==--
@@ -235,8 +265,9 @@ MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 MinimizeButton.TextSize = 20.0
 
-UICorner6.CornerRadius = UDim.new(0, 10)
-UICorner6.Parent = MinimizeButton
+UICorner14 = Instance.new("UICorner")
+UICorner14.CornerRadius = UDim.new(0, 10)
+UICorner14.Parent = MinimizeButton
 
 --====================--
 --== Maximize Button ==--
@@ -252,8 +283,9 @@ MaximizeButton.Text = "□"
 MaximizeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 MaximizeButton.TextSize = 20.0
 
-UICorner7.CornerRadius = UDim.new(0, 10)
-UICorner7.Parent = MaximizeButton
+UICorner15 = Instance.new("UICorner")
+UICorner15.CornerRadius = UDim.new(0, 10)
+UICorner15.Parent = MaximizeButton
 
 --====================--
 --== Close Button ==--
@@ -269,8 +301,9 @@ CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 CloseButton.TextSize = 20.0
 
-UICorner8.CornerRadius = UDim.new(0, 10)
-UICorner8.Parent = CloseButton
+UICorner16 = Instance.new("UICorner")
+UICorner16.CornerRadius = UDim.new(0, 10)
+UICorner16.Parent = CloseButton
 
 --====================--
 --== Executor Label ==--
@@ -310,9 +343,9 @@ SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 SliderFrame.Position = UDim2.new(0.1, 0, 0.5, 0)
 SliderFrame.Size = UDim2.new(0.8, 0, 0.15, 0)
 
-UICorner9 = Instance.new("UICorner")
-UICorner9.CornerRadius = UDim.new(0, 10)
-UICorner9.Parent = SliderFrame
+UICorner17 = Instance.new("UICorner")
+UICorner17.CornerRadius = UDim.new(0, 10)
+UICorner17.Parent = SliderFrame
 
 SliderBackground.Name = "SliderBackground"
 SliderBackground.Parent = SliderFrame
@@ -330,9 +363,9 @@ SliderButton.Text = ""
 SliderButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 SliderButton.TextSize = 14.0
 
-UICorner10 = Instance.new("UICorner")
-UICorner10.CornerRadius = UDim.new(0, 10)
-UICorner10.Parent = SliderButton
+UICorner18 = Instance.new("UICorner")
+UICorner18.CornerRadius = UDim.new(0, 10)
+UICorner18.Parent = SliderButton
 
 --====================--
 --== UI Functions ==--
@@ -531,13 +564,19 @@ end)
 
 -- Maximize button
 MaximizeButton.MouseButton1Click:Connect(function()
-    local tween = TweenService:Create>MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 400, 0, 550)})
+    local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 400, 0, 550)})
     tween:Play()
 end)
 
 -- Close button
 CloseButton.MouseButton1Click:Connect(function()
     UI:Destroy()
+end)
+
+-- Copy Discord link button
+CopyDiscordButton.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/TXebwYcPaB")
+    print("Discord link copied to clipboard!")
 end)
 
 --====================--

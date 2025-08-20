@@ -1,45 +1,78 @@
 --[[
-    VORTEX-LUNA RED  –  My Market Full Loader
-    Discord : https://discord.gg/PrmHmDfT
+    VORTEX-LUNA RED v3.0
+    - Cinematic intro
+    - Centered & draggable
+    - Full FireServer toggles
+    Discord: https://discord.gg/PrmHmDfT
 ]]
 
---// 0. Services
-local Players      = game:GetService("Players")
-local Replicated   = game:GetService("ReplicatedStorage")
-local Workspace    = game:GetService("Workspace")
-local RunService   = game:GetService("RunService")
-local UIS          = game:GetService("UserInputService")
-local Tween        = game:GetService("TweenService")
-local CoreGui      = game:GetService("CoreGui")
+--// Services
+local Players   = game:GetService("Players")
+local Replicated= game:GetService("ReplicatedStorage")
+local CoreGui   = game:GetService("CoreGui")
+local Tween     = game:GetService("TweenService")
+local UIS       = game:GetService("UserInputService")
+local Run       = game:GetService("RunService")
 
 local LP = Players.LocalPlayer
-local Character = LP.Character or LP.CharacterAdded:Wait()
-local Humanoid  = Character:WaitForChild("Humanoid")
+local Humanoid = LP.Character and LP.Character:WaitForChild("Humanoid") or nil
+LP.CharacterAdded:Connect(function(char) Humanoid = char:WaitForChild("Humanoid") end)
 
 -------------------------------------------------
--- 1.  Anti-kick & Bypass
+-- 1.  Anti-kick
 -------------------------------------------------
 local mt = getrawmetatable(game)
 setreadonly(mt,false)
 local old = mt.__namecall
-mt.__namecall = newcclosure(function(self,...)
-    local method = getnamecallmethod()
-    if method:lower() == "kick" then return end
-    return old(self,...)
+mt.__namecall = newcclosure(function(...)
+    if getnamecallmethod():lower()=="kick" then return end
+    return old(...)
 end)
 
 -------------------------------------------------
--- 2.  Remote Cache Builder
+-- 2.  Remote Cache
 -------------------------------------------------
 local Rem = {}
 for _,v in pairs(Replicated:GetDescendants()) do
-    if v:IsA("RemoteEvent") then
-        Rem[v.Name:lower()] = v
-    end
+    if v:IsA("RemoteEvent") then Rem[v.Name:lower()] = v end
 end
 
 -------------------------------------------------
--- 3.  UI Luna-Style
+-- 3.  Cinematic Intro
+-------------------------------------------------
+local introGui = Instance.new("ScreenGui")
+introGui.Name = "VortexIntro"
+introGui.Parent = CoreGui
+introGui.ResetOnSpawn = false
+
+local introFrame = Instance.new("Frame")
+introFrame.Size = UDim2.new(1,0,1,0)
+introFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+introFrame.BorderSizePixel = 0
+introFrame.Parent = introGui
+
+local introText = Instance.new("TextLabel")
+introText.Size = UDim2.new(0, 300, 0, 100)
+introText.Position = UDim2.new(0.5, -150, 0.5, -50)
+introText.BackgroundTransparency = 1
+introText.Font = Enum.Font.GothamBold
+introText.Text = ""
+introText.TextColor3 = Color3.fromRGB(255, 40, 40)
+introText.TextSize = 64
+introText.Parent = introFrame
+
+local word = "VORTEX"
+for i = 1, #word do
+    introText.Text = word:sub(1, i)
+    task.wait(0.25)
+end
+task.wait(0.5)
+Tween:Create(introFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+task.wait(0.5)
+introGui:Destroy()
+
+-------------------------------------------------
+-- 4.  Main UI
 -------------------------------------------------
 local gui = Instance.new("ScreenGui")
 gui.Name = "VortexLuna"
@@ -47,34 +80,34 @@ gui.Parent = CoreGui
 gui.ResetOnSpawn = false
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 480, 0, 260)
-main.Position = UDim2.new(0.5, -240, 0.5, -130)
+main.Size = UDim2.new(0, 520, 0, 340)
+main.AnchorPoint = Vector2.new(0.5,0.5)
+main.Position = UDim2.new(0.5, 0, 0.5, 0)
 main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 main.BorderSizePixel = 0
-main.AnchorPoint = Vector2.new(0.5,0.5)
 main.Parent = gui
-Instance.new("UICorner",main).CornerRadius = UDim.new(0,12)
+Instance.new("UICorner",main).CornerRadius = UDim.new(0,16)
 
--- shadow
-local shad = Instance.new("ImageLabel")
-shad.Image = "rbxassetid://13116647614"
-shad.Size = UDim2.new(1,24,1,24)
-shad.Position = UDim2.new(0,-12,0,-12)
-shad.ImageColor3 = Color3.fromRGB(255,40,40)
-shad.ImageTransparency = .7
-shad.BackgroundTransparency = 1
-shad.ScaleType = Enum.ScaleType.Slice
-shad.SliceCenter = Rect.new(24,24,152,152)
-shad.ZIndex = -1
-shad.Parent = main
+-- red glow shadow
+local glow = Instance.new("ImageLabel")
+glow.Image = "rbxassetid://13116647614"
+glow.Size = UDim2.new(1,32,1,32)
+glow.Position = UDim2.new(0,-16,0,-16)
+glow.ImageColor3 = Color3.fromRGB(255,40,40)
+glow.ImageTransparency = .75
+glow.BackgroundTransparency = 1
+glow.ScaleType = Enum.ScaleType.Slice
+glow.SliceCenter = Rect.new(24,24,152,152)
+glow.ZIndex = -1
+glow.Parent = main
 
 -- header
 local head = Instance.new("Frame")
-head.Size = UDim2.new(1,0,0,42)
+head.Size = UDim2.new(1,0,0,48)
 head.BackgroundColor3 = Color3.fromRGB(35,35,35)
 head.BorderSizePixel = 0
 head.Parent = main
-Instance.new("UICorner",head).CornerRadius = UDim.new(0,12)
+Instance.new("UICorner",head).CornerRadius = UDim.new(0,16)
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,-40,1,0)
@@ -83,18 +116,18 @@ title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
 title.Text = "VORTEX-LUNA RED"
 title.TextColor3 = Color3.fromRGB(255,40,40)
-title.TextSize = 18
+title.TextSize = 22
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = head
 
 local close = Instance.new("TextButton")
-close.Size = UDim2.new(0,32,0,32)
-close.Position = UDim2.new(1,-38,0.5,-16)
+close.Size = UDim2.new(0,36,0,36)
+close.Position = UDim2.new(1,-42,0.5,-18)
 close.BackgroundTransparency = 1
 close.Font = Enum.Font.SourceSans
 close.Text = "✕"
 close.TextColor3 = Color3.fromRGB(255,255,255)
-close.TextSize = 18
+close.TextSize = 20
 close.Parent = head
 close.MouseButton1Click:Connect(function() gui:Destroy() end)
 
@@ -119,50 +152,47 @@ UIS.InputChanged:Connect(function(inp)
 end)
 
 -------------------------------------------------
--- 4.  Grid Toggle Builder
+-- 5.  Grid Toggle Builder
 -------------------------------------------------
 local grid = Instance.new("Frame")
-grid.Size = UDim2.new(1,-12,1,-54)
-grid.Position = UDim2.new(0,6,0,48)
+grid.Size = UDim2.new(1,-16,1,-64)
+grid.Position = UDim2.new(0,8,0,56)
 grid.BackgroundTransparency = 1
 grid.Parent = main
 
 local lay = Instance.new("UIGridLayout")
-lay.CellSize = UDim2.new(0,220,0,46)
+lay.CellSize = UDim2.new(0,240,0,52)
 lay.CellPadding = UDim.new(0,8)
 lay.Parent = grid
 
--------------------------------------------------
--- 5.  Toggle Functions
--------------------------------------------------
-local function addToggle(name, iconId, callback)
+local function addToggle(name, iconId, func)
     local card = Instance.new("Frame")
     card.BackgroundColor3 = Color3.fromRGB(30,30,30)
     card.BorderSizePixel = 0
     card.Parent = grid
-    Instance.new("UICorner",card).CornerRadius = UDim.new(0,8)
+    Instance.new("UICorner",card).CornerRadius = UDim.new(0,12)
 
     local icon = Instance.new("ImageLabel")
-    icon.Size = UDim2.new(0,22,0,22)
-    icon.Position = UDim2.new(0,8,0.5,-11)
+    icon.Size = UDim2.new(0,24,0,24)
+    icon.Position = UDim2.new(0,12,0.5,-12)
     icon.Image = "rbxassetid://"..iconId
     icon.BackgroundTransparency = 1
     icon.Parent = card
 
     local txt = Instance.new("TextLabel")
-    txt.Size = UDim2.new(1,-70,1,0)
-    txt.Position = UDim2.new(0,36,0,0)
+    txt.Size = UDim2.new(1,-80,1,0)
+    txt.Position = UDim2.new(0,44,0,0)
     txt.BackgroundTransparency = 1
     txt.Font = Enum.Font.Gotham
     txt.Text = name
     txt.TextColor3 = Color3.fromRGB(255,255,255)
-    txt.TextSize = 14
+    txt.TextSize = 15
     txt.TextXAlignment = Enum.TextXAlignment.Left
     txt.Parent = card
 
     local sw = Instance.new("TextButton")
     sw.Size = UDim2.new(0,48,0,24)
-    sw.Position = UDim2.new(1,-54,0.5,-12)
+    sw.Position = UDim2.new(1,-60,0.5,-12)
     sw.BackgroundColor3 = Color3.fromRGB(60,60,60)
     sw.BorderSizePixel = 0
     sw.Text = ""
@@ -182,29 +212,29 @@ local function addToggle(name, iconId, callback)
         on = not on
         Tween:Create(knob,TweenInfo.new(.2),{Position = on and UDim2.new(1,-22,0.5,-10) or UDim2.new(0,2,0.5,-10)}):Play()
         Tween:Create(sw,TweenInfo.new(.2),{BackgroundColor3 = on and Color3.fromRGB(255,40,40) or Color3.fromRGB(60,60,60)}):Play()
-        callback(on)
+        func(on)
     end)
 
-    -- mini preview on icon click
+    -- mini preview
     icon.MouseButton1Click:Connect(function()
         local prev = Instance.new("ImageLabel")
-        prev.Size = UDim2.new(0,64,0,64)
-        prev.Position = UDim2.new(0.5,-32,0.5,-32)
+        prev.Size = UDim2.new(0,70,0,70)
+        prev.Position = UDim2.new(0.5,-35,0.5,-35)
         prev.Image = icon.Image
         prev.BackgroundTransparency = 1
         prev.ZIndex = 10
         prev.Parent = card
-        Tween:Create(prev,TweenInfo.new(.2),{Size = UDim2.new(0,0,0,0)}):Play()
-        task.wait(.2)
+        Tween:Create(prev,TweenInfo.new(.25),{Size = UDim2.new(0,0,0,0)}):Play()
+        task.wait(.25)
         prev:Destroy()
     end)
 end
 
 -------------------------------------------------
--- 6.  Daftar Toggle + fungsi
+-- 6.  Toggle Functions
 -------------------------------------------------
 local function toggleESP(on)
-    for _,plr in pairs(Players:GetPlayers()) do
+    for _,plr in ipairs(Players:GetPlayers()) do
         if plr~=LP and plr.Character then
             local head = plr.Character:FindFirstChild("Head")
             if head then
@@ -233,15 +263,16 @@ local function toggleESP(on)
 end
 
 local function toggleFly(on)
-    Humanoid.WalkSpeed = on and 100 or 16
-    Humanoid.JumpPower = on and 100 or 50
+    Humanoid.WalkSpeed = on and 120 or 16
+    Humanoid.JumpPower = on and 120 or 50
 end
 
 local function toggleNoClip(on)
-    while on and task.wait() do
+    while on do
         for _,v in ipairs(Character:GetDescendants()) do
             if v:IsA("BasePart") then v.CanCollide = false end
         end
+        task.wait()
     end
 end
 
@@ -283,7 +314,7 @@ local function toggleAutoTrade(on)
 end
 
 -------------------------------------------------
--- 7.  Populate toggles
+-- 7.  Populate
 -------------------------------------------------
 addToggle("Auto Crate",    6031075931, toggleAutoCrate)
 addToggle("ESP",           6031280882, toggleESP)
@@ -294,12 +325,5 @@ addToggle("500× Luck",     6031225810, toggle500Luck)
 addToggle("500× Money",    6034767619, toggle500Money)
 addToggle("Auto Collect",  6031075931, toggleAutoCollect)
 addToggle("Auto Trade",    6035056483, toggleAutoTrade)
-
--------------------------------------------------
--- 8.  Auto-center on resize
--------------------------------------------------
-game:GetService("RunService").RenderStepped:Connect(function()
-    main.Position = UDim2.new(0.5, -main.AbsoluteSize.X/2, 0.5, -main.AbsoluteSize.Y/2)
-end)
 
 print("✅ VORTEX-LUNA RED loaded – My Market ready")

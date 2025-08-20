@@ -1,22 +1,20 @@
 --[[
-    VORTEX-LUNA RED v3.0
-    - Cinematic intro
-    - Centered & draggable
-    - Full FireServer toggles
+    VORTX HUB v4.0 – My Market
+    Transparan glass, cinematic intro, full toggles
     Discord: https://discord.gg/PrmHmDfT
 ]]
 
 --// Services
 local Players   = game:GetService("Players")
-local Replicated= game:GetService("ReplicatedStorage")
-local CoreGui   = game:GetService("CoreGui")
 local Tween     = game:GetService("TweenService")
+local CoreGui   = game:GetService("CoreGui")
 local UIS       = game:GetService("UserInputService")
+local Replicated= game:GetService("ReplicatedStorage")
 local Run       = game:GetService("RunService")
 
 local LP = Players.LocalPlayer
-local Humanoid = LP.Character and LP.Character:WaitForChild("Humanoid") or nil
-LP.CharacterAdded:Connect(function(char) Humanoid = char:WaitForChild("Humanoid") end)
+local Character = LP.Character or LP.CharacterAdded:Wait()
+local Humanoid  = Character:WaitForChild("Humanoid")
 
 -------------------------------------------------
 -- 1.  Anti-kick
@@ -38,96 +36,120 @@ for _,v in pairs(Replicated:GetDescendants()) do
 end
 
 -------------------------------------------------
--- 3.  Cinematic Intro
+-- 3.  Cinematic Intro (V O R T X)
 -------------------------------------------------
-local introGui = Instance.new("ScreenGui")
-introGui.Name = "VortexIntro"
-introGui.Parent = CoreGui
-introGui.ResetOnSpawn = false
+local intro = Instance.new("ScreenGui")
+intro.Name = "VORTXIntro"
+intro.Parent = CoreGui
+intro.ResetOnSpawn = false
 
-local introFrame = Instance.new("Frame")
-introFrame.Size = UDim2.new(1,0,1,0)
-introFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-introFrame.BorderSizePixel = 0
-introFrame.Parent = introGui
+local bg = Instance.new("Frame")
+bg.Size = UDim2.new(1,0,1,0)
+bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
+bg.BackgroundTransparency = 0
+bg.Parent = intro
 
-local introText = Instance.new("TextLabel")
-introText.Size = UDim2.new(0, 300, 0, 100)
-introText.Position = UDim2.new(0.5, -150, 0.5, -50)
-introText.BackgroundTransparency = 1
-introText.Font = Enum.Font.GothamBold
-introText.Text = ""
-introText.TextColor3 = Color3.fromRGB(255, 40, 40)
-introText.TextSize = 64
-introText.Parent = introFrame
+local txt = Instance.new("TextLabel")
+txt.Size = UDim2.new(0, 400, 0, 120)
+txt.Position = UDim2.new(0.5, -200, 0.5, -60)
+txt.BackgroundTransparency = 1
+txt.Font = Enum.Font.GothamBold
+txt.Text = ""
+txt.TextColor3 = Color3.fromRGB(255,40,40)
+txt.TextSize = 96
+txt.Parent = bg
 
-local word = "VORTEX"
+local word = "VORTX"
 for i = 1, #word do
-    introText.Text = word:sub(1, i)
-    task.wait(0.25)
+    txt.Text = word:sub(1, i) .. " "
+    task.wait(0.3)
 end
-task.wait(0.5)
-Tween:Create(introFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-task.wait(0.5)
-introGui:Destroy()
+task.wait(0.7)
+Tween:Create(bg, TweenInfo.new(0.7), {BackgroundTransparency = 1}):Play()
+task.wait(0.7)
+intro:Destroy()
 
 -------------------------------------------------
--- 4.  Main UI
+-- 4.  Main UI (Glass + Transparan)
 -------------------------------------------------
 local gui = Instance.new("ScreenGui")
-gui.Name = "VortexLuna"
+gui.Name = "VORTXHub"
 gui.Parent = CoreGui
 gui.ResetOnSpawn = false
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 520, 0, 340)
+main.Size = UDim2.new(0, 640, 0, 440)
 main.AnchorPoint = Vector2.new(0.5,0.5)
 main.Position = UDim2.new(0.5, 0, 0.5, 0)
 main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+main.BackgroundTransparency = 0.25
 main.BorderSizePixel = 0
 main.Parent = gui
-Instance.new("UICorner",main).CornerRadius = UDim.new(0,16)
+Instance.new("UICorner",main).CornerRadius = UDim.new(0,20)
 
--- red glow shadow
-local glow = Instance.new("ImageLabel")
-glow.Image = "rbxassetid://13116647614"
-glow.Size = UDim2.new(1,32,1,32)
-glow.Position = UDim2.new(0,-16,0,-16)
-glow.ImageColor3 = Color3.fromRGB(255,40,40)
-glow.ImageTransparency = .75
-glow.BackgroundTransparency = 1
-glow.ScaleType = Enum.ScaleType.Slice
-glow.SliceCenter = Rect.new(24,24,152,152)
-glow.ZIndex = -1
-glow.Parent = main
+-- blur behind
+local blur = Instance.new("ImageLabel")
+blur.Image = "rbxassetid://13116647614"
+blur.Size = UDim2.new(1,40,1,40)
+blur.Position = UDim2.new(0,-20,0,-20)
+blur.ImageColor3 = Color3.fromRGB(255,40,40)
+blur.ImageTransparency = 0.85
+blur.BackgroundTransparency = 1
+blur.ScaleType = Enum.ScaleType.Slice
+blur.SliceCenter = Rect.new(24,24,152,152)
+blur.ZIndex = -1
+blur.Parent = main
 
--- header
+-------------------------------------------------
+-- 5.  Header Penuh Gambar + Info
+-------------------------------------------------
 local head = Instance.new("Frame")
-head.Size = UDim2.new(1,0,0,48)
-head.BackgroundColor3 = Color3.fromRGB(35,35,35)
+head.Size = UDim2.new(1,0,0,120)
+head.BackgroundColor3 = Color3.fromRGB(30,30,30)
+head.BackgroundTransparency = 0.4
 head.BorderSizePixel = 0
 head.Parent = main
-Instance.new("UICorner",head).CornerRadius = UDim.new(0,16)
+Instance.new("UICorner",head).CornerRadius = UDim.new(0,20)
+
+local headImg = Instance.new("ImageLabel")
+headImg.Size = UDim2.new(1,0,1,0)
+headImg.Image = "rbxassetid://13116647614"
+headImg.ImageColor3 = Color3.fromRGB(255,40,40)
+headImg.ImageTransparency = 0.6
+headImg.ScaleType = Enum.ScaleType.Crop
+headImg.Parent = head
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,-40,1,0)
-title.Position = UDim2.new(0,12,0,0)
+title.Size = UDim2.new(1,-20,0,40)
+title.Position = UDim2.new(0,10,0,10)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
-title.Text = "VORTEX-LUNA RED"
-title.TextColor3 = Color3.fromRGB(255,40,40)
-title.TextSize = 22
+title.Text = "VORTX HUB"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextSize = 28
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = head
 
+local desc = Instance.new("TextLabel")
+desc.Size = UDim2.new(1,-20,0,60)
+desc.Position = UDim2.new(0,10,0,50)
+desc.BackgroundTransparency = 1
+desc.Font = Enum.Font.Gotham
+desc.Text = "Modern glass UI for My Market.\nToggle features below."
+desc.TextColor3 = Color3.fromRGB(220,220,220)
+desc.TextSize = 14
+desc.TextWrapped = true
+desc.TextXAlignment = Enum.TextXAlignment.Left
+desc.Parent = head
+
 local close = Instance.new("TextButton")
 close.Size = UDim2.new(0,36,0,36)
-close.Position = UDim2.new(1,-42,0.5,-18)
+close.Position = UDim2.new(1,-46,0.5,-18)
 close.BackgroundTransparency = 1
 close.Font = Enum.Font.SourceSans
 close.Text = "✕"
 close.TextColor3 = Color3.fromRGB(255,255,255)
-close.TextSize = 20
+close.TextSize = 24
 close.Parent = head
 close.MouseButton1Click:Connect(function() gui:Destroy() end)
 
@@ -152,74 +174,75 @@ UIS.InputChanged:Connect(function(inp)
 end)
 
 -------------------------------------------------
--- 5.  Grid Toggle Builder
+-- 6.  Grid Toggle
 -------------------------------------------------
 local grid = Instance.new("Frame")
-grid.Size = UDim2.new(1,-16,1,-64)
-grid.Position = UDim2.new(0,8,0,56)
+grid.Size = UDim2.new(1,-24,1,-144)
+grid.Position = UDim2.new(0,12,0,132)
 grid.BackgroundTransparency = 1
 grid.Parent = main
 
 local lay = Instance.new("UIGridLayout")
-lay.CellSize = UDim2.new(0,240,0,52)
-lay.CellPadding = UDim.new(0,8)
+lay.CellSize = UDim2.new(0,290,0,60)
+lay.CellPadding = UDim.new(0,12)
 lay.Parent = grid
 
-local function addToggle(name, iconId, func)
+local function addToggle(name, iconId, callback)
     local card = Instance.new("Frame")
-    card.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    card.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    card.BackgroundTransparency = 0.3
     card.BorderSizePixel = 0
     card.Parent = grid
-    Instance.new("UICorner",card).CornerRadius = UDim.new(0,12)
+    Instance.new("UICorner",card).CornerRadius = UDim.new(0,16)
 
     local icon = Instance.new("ImageLabel")
-    icon.Size = UDim2.new(0,24,0,24)
-    icon.Position = UDim2.new(0,12,0.5,-12)
+    icon.Size = UDim2.new(0,28,0,28)
+    icon.Position = UDim2.new(0,12,0.5,-14)
     icon.Image = "rbxassetid://"..iconId
     icon.BackgroundTransparency = 1
     icon.Parent = card
 
     local txt = Instance.new("TextLabel")
-    txt.Size = UDim2.new(1,-80,1,0)
-    txt.Position = UDim2.new(0,44,0,0)
+    txt.Size = UDim2.new(1,-90,1,0)
+    txt.Position = UDim2.new(0,48,0,0)
     txt.BackgroundTransparency = 1
     txt.Font = Enum.Font.Gotham
     txt.Text = name
     txt.TextColor3 = Color3.fromRGB(255,255,255)
-    txt.TextSize = 15
+    txt.TextSize = 16
     txt.TextXAlignment = Enum.TextXAlignment.Left
     txt.Parent = card
 
     local sw = Instance.new("TextButton")
-    sw.Size = UDim2.new(0,48,0,24)
-    sw.Position = UDim2.new(1,-60,0.5,-12)
-    sw.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    sw.Size = UDim2.new(0,52,0,26)
+    sw.Position = UDim2.new(1,-64,0.5,-13)
+    sw.BackgroundColor3 = Color3.fromRGB(70,70,70)
     sw.BorderSizePixel = 0
     sw.Text = ""
     sw.Parent = card
-    Instance.new("UICorner",sw).CornerRadius = UDim.new(0,12)
+    Instance.new("UICorner",sw).CornerRadius = UDim.new(0,13)
 
     local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0,20,0,20)
-    knob.Position = UDim2.new(0,2,0.5,-10)
+    knob.Size = UDim2.new(0,22,0,22)
+    knob.Position = UDim2.new(0,2,0.5,-11)
     knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
     knob.BorderSizePixel = 0
     knob.Parent = sw
-    Instance.new("UICorner",knob).CornerRadius = UDim.new(0,10)
+    Instance.new("UICorner",knob).CornerRadius = UDim.new(0,11)
 
     local on = false
     sw.MouseButton1Click:Connect(function()
         on = not on
-        Tween:Create(knob,TweenInfo.new(.2),{Position = on and UDim2.new(1,-22,0.5,-10) or UDim2.new(0,2,0.5,-10)}):Play()
-        Tween:Create(sw,TweenInfo.new(.2),{BackgroundColor3 = on and Color3.fromRGB(255,40,40) or Color3.fromRGB(60,60,60)}):Play()
-        func(on)
+        Tween:Create(knob,TweenInfo.new(.2),{Position = on and UDim2.new(1,-24,0.5,-11) or UDim2.new(0,2,0.5,-11)}):Play()
+        Tween:Create(sw,TweenInfo.new(.2),{BackgroundColor3 = on and Color3.fromRGB(255,40,40) or Color3.fromRGB(70,70,70)}):Play()
+        callback(on)
     end)
 
     -- mini preview
     icon.MouseButton1Click:Connect(function()
         local prev = Instance.new("ImageLabel")
-        prev.Size = UDim2.new(0,70,0,70)
-        prev.Position = UDim2.new(0.5,-35,0.5,-35)
+        prev.Size = UDim2.new(0,80,0,80)
+        prev.Position = UDim2.new(0.5,-40,0.5,-40)
         prev.Image = icon.Image
         prev.BackgroundTransparency = 1
         prev.ZIndex = 10
@@ -231,7 +254,7 @@ local function addToggle(name, iconId, func)
 end
 
 -------------------------------------------------
--- 6.  Toggle Functions
+-- 7.  Toggle Functions
 -------------------------------------------------
 local function toggleESP(on)
     for _,plr in ipairs(Players:GetPlayers()) do
@@ -314,7 +337,7 @@ local function toggleAutoTrade(on)
 end
 
 -------------------------------------------------
--- 7.  Populate
+-- 8.  Populate
 -------------------------------------------------
 addToggle("Auto Crate",    6031075931, toggleAutoCrate)
 addToggle("ESP",           6031280882, toggleESP)
@@ -326,4 +349,4 @@ addToggle("500× Money",    6034767619, toggle500Money)
 addToggle("Auto Collect",  6031075931, toggleAutoCollect)
 addToggle("Auto Trade",    6035056483, toggleAutoTrade)
 
-print("✅ VORTEX-LUNA RED loaded – My Market ready")
+print("✅ VORTX HUB loaded – My Market ready")

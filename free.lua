@@ -1,41 +1,49 @@
---// VORTEX-LUNA RED  – My Market Edition
---// Discord : https://discord.gg/PrmHmDfT
---// Mobile  : yes
+--[[
+    VORTEX-LUNA RED  –  My Market Full Loader
+    Discord : https://discord.gg/PrmHmDfT
+]]
 
+--// 0. Services
 local Players      = game:GetService("Players")
+local Replicated   = game:GetService("ReplicatedStorage")
+local Workspace    = game:GetService("Workspace")
+local RunService   = game:GetService("RunService")
 local UIS          = game:GetService("UserInputService")
 local Tween        = game:GetService("TweenService")
-local Core         = game:GetService("CoreGui")
-local Replicated   = game:GetService("ReplicatedStorage")
+local CoreGui      = game:GetService("CoreGui")
 
-local LP      = Players.LocalPlayer
-local mouse   = LP:GetMouse()
+local LP = Players.LocalPlayer
+local Character = LP.Character or LP.CharacterAdded:Wait()
+local Humanoid  = Character:WaitForChild("Humanoid")
 
 -------------------------------------------------
--- 0.  Anti-kick
+-- 1.  Anti-kick & Bypass
 -------------------------------------------------
 local mt = getrawmetatable(game)
 setreadonly(mt,false)
 local old = mt.__namecall
-mt.__namecall = newcclosure(function(...)
-    if getnamecallmethod():lower()=="kick" then return end
-    return old(...)
+mt.__namecall = newcclosure(function(self,...)
+    local method = getnamecallmethod()
+    if method:lower() == "kick" then return end
+    return old(self,...)
 end)
 
 -------------------------------------------------
--- 1.  Remote cache
+-- 2.  Remote Cache Builder
 -------------------------------------------------
 local Rem = {}
 for _,v in pairs(Replicated:GetDescendants()) do
-    if v:IsA("RemoteEvent") then Rem[v.Name:lower()]=v end
+    if v:IsA("RemoteEvent") then
+        Rem[v.Name:lower()] = v
+    end
 end
 
 -------------------------------------------------
--- 2.  GUI Shell (Luna-style)
+-- 3.  UI Luna-Style
 -------------------------------------------------
 local gui = Instance.new("ScreenGui")
 gui.Name = "VortexLuna"
-gui.Parent = Core
+gui.Parent = CoreGui
 gui.ResetOnSpawn = false
 
 local main = Instance.new("Frame")
@@ -45,14 +53,13 @@ main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 main.BorderSizePixel = 0
 main.AnchorPoint = Vector2.new(0.5,0.5)
 main.Parent = gui
-
 Instance.new("UICorner",main).CornerRadius = UDim.new(0,12)
 
--- Red glass shadow
+-- shadow
 local shad = Instance.new("ImageLabel")
 shad.Image = "rbxassetid://13116647614"
-shad.Size = UDim2.new(1,20,1,20)
-shad.Position = UDim2.new(0,-10,0,-10)
+shad.Size = UDim2.new(1,24,1,24)
+shad.Position = UDim2.new(0,-12,0,-12)
 shad.ImageColor3 = Color3.fromRGB(255,40,40)
 shad.ImageTransparency = .7
 shad.BackgroundTransparency = 1
@@ -61,9 +68,7 @@ shad.SliceCenter = Rect.new(24,24,152,152)
 shad.ZIndex = -1
 shad.Parent = main
 
--------------------------------------------------
--- 3.  Header
--------------------------------------------------
+-- header
 local head = Instance.new("Frame")
 head.Size = UDim2.new(1,0,0,42)
 head.BackgroundColor3 = Color3.fromRGB(35,35,35)
@@ -72,7 +77,7 @@ head.Parent = main
 Instance.new("UICorner",head).CornerRadius = UDim.new(0,12)
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,-90,1,0)
+title.Size = UDim2.new(1,-40,1,0)
 title.Position = UDim2.new(0,12,0,0)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
@@ -91,72 +96,9 @@ close.Text = "✕"
 close.TextColor3 = Color3.fromRGB(255,255,255)
 close.TextSize = 18
 close.Parent = head
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
 
--------------------------------------------------
--- 4.  Horizontal tabs
--------------------------------------------------
-local tabs = Instance.new("ScrollingFrame")
-tabs.Size = UDim2.new(1,-12,0,46)
-tabs.Position = UDim2.new(0,6,0,48)
-tabs.BackgroundTransparency = 1
-tabs.ScrollBarThickness = 0
-tabs.ScrollingDirection = Enum.ScrollingDirection.X
-tabs.Parent = main
-
-local tabList = Instance.new("UIListLayout")
-tabList.FillDirection = Enum.FillDirection.Horizontal
-tabList.Padding = UDim.new(0,8)
-tabList.Parent = tabs
-
--------------------------------------------------
--- 5.  Tab builder helper
--------------------------------------------------
-local activeTab
-local function addTab(name, iconId, func)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0,110,1,0)
-    btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    btn.BorderSizePixel = 0
-    btn.Font = Enum.Font.Gotham
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(200,200,200)
-    btn.TextSize = 14
-    btn.Parent = tabs
-    Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
-
-    local icon = Instance.new("ImageLabel")
-    icon.Size = UDim2.new(0,18,0,18)
-    icon.Position = UDim2.new(0,8,0.5,-9)
-    icon.Image = "rbxassetid://"..iconId
-    icon.BackgroundTransparency = 1
-    icon.Parent = btn
-
-    local glow = Instance.new("ImageLabel")
-    glow.Image = "rbxassetid://13116647614"
-    glow.Size = UDim2.new(1,12,1,12)
-    glow.Position = UDim2.new(0,-6,0,-6)
-    glow.ImageColor3 = Color3.fromRGB(255,40,40)
-    glow.ImageTransparency = .9
-    glow.BackgroundTransparency = 1
-    glow.ZIndex = -1
-    glow.Visible = false
-    glow.Parent = btn
-
-    btn.MouseButton1Click:Connect(function()
-        if activeTab then
-            activeTab.BackgroundColor3 = Color3.fromRGB(35,35,35)
-            activeTab:FindFirstChild("ImageLabel",true).Parent.Visible = false
-        end
-        activeTab = btn
-        btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
-        glow.Visible = true
-        func()
-    end)
-end
-
--------------------------------------------------
--- 6.  Drag logic
--------------------------------------------------
+-- drag
 local dragging, startPos, startMouse
 head.InputBegan:Connect(function(inp)
     if inp.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -164,13 +106,10 @@ head.InputBegan:Connect(function(inp)
         startPos = main.Position
         startMouse = inp.Position
         inp.Changed:Connect(function()
-            if inp.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
+            if inp.UserInputState == Enum.UserInputState.End then dragging=false end
         end)
     end
 end)
-
 UIS.InputChanged:Connect(function(inp)
     if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = inp.Position - startMouse
@@ -180,16 +119,93 @@ UIS.InputChanged:Connect(function(inp)
 end)
 
 -------------------------------------------------
--- 7.  Close
+-- 4.  Grid Toggle Builder
 -------------------------------------------------
-close.MouseButton1Click:Connect(function() gui:Destroy() end)
+local grid = Instance.new("Frame")
+grid.Size = UDim2.new(1,-12,1,-54)
+grid.Position = UDim2.new(0,6,0,48)
+grid.BackgroundTransparency = 1
+grid.Parent = main
+
+local lay = Instance.new("UIGridLayout")
+lay.CellSize = UDim2.new(0,220,0,46)
+lay.CellPadding = UDim.new(0,8)
+lay.Parent = grid
 
 -------------------------------------------------
--- 8.  Functions untuk toggle
+-- 5.  Toggle Functions
+-------------------------------------------------
+local function addToggle(name, iconId, callback)
+    local card = Instance.new("Frame")
+    card.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    card.BorderSizePixel = 0
+    card.Parent = grid
+    Instance.new("UICorner",card).CornerRadius = UDim.new(0,8)
+
+    local icon = Instance.new("ImageLabel")
+    icon.Size = UDim2.new(0,22,0,22)
+    icon.Position = UDim2.new(0,8,0.5,-11)
+    icon.Image = "rbxassetid://"..iconId
+    icon.BackgroundTransparency = 1
+    icon.Parent = card
+
+    local txt = Instance.new("TextLabel")
+    txt.Size = UDim2.new(1,-70,1,0)
+    txt.Position = UDim2.new(0,36,0,0)
+    txt.BackgroundTransparency = 1
+    txt.Font = Enum.Font.Gotham
+    txt.Text = name
+    txt.TextColor3 = Color3.fromRGB(255,255,255)
+    txt.TextSize = 14
+    txt.TextXAlignment = Enum.TextXAlignment.Left
+    txt.Parent = card
+
+    local sw = Instance.new("TextButton")
+    sw.Size = UDim2.new(0,48,0,24)
+    sw.Position = UDim2.new(1,-54,0.5,-12)
+    sw.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    sw.BorderSizePixel = 0
+    sw.Text = ""
+    sw.Parent = card
+    Instance.new("UICorner",sw).CornerRadius = UDim.new(0,12)
+
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0,20,0,20)
+    knob.Position = UDim2.new(0,2,0.5,-10)
+    knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    knob.BorderSizePixel = 0
+    knob.Parent = sw
+    Instance.new("UICorner",knob).CornerRadius = UDim.new(0,10)
+
+    local on = false
+    sw.MouseButton1Click:Connect(function()
+        on = not on
+        Tween:Create(knob,TweenInfo.new(.2),{Position = on and UDim2.new(1,-22,0.5,-10) or UDim2.new(0,2,0.5,-10)}):Play()
+        Tween:Create(sw,TweenInfo.new(.2),{BackgroundColor3 = on and Color3.fromRGB(255,40,40) or Color3.fromRGB(60,60,60)}):Play()
+        callback(on)
+    end)
+
+    -- mini preview on icon click
+    icon.MouseButton1Click:Connect(function()
+        local prev = Instance.new("ImageLabel")
+        prev.Size = UDim2.new(0,64,0,64)
+        prev.Position = UDim2.new(0.5,-32,0.5,-32)
+        prev.Image = icon.Image
+        prev.BackgroundTransparency = 1
+        prev.ZIndex = 10
+        prev.Parent = card
+        Tween:Create(prev,TweenInfo.new(.2),{Size = UDim2.new(0,0,0,0)}):Play()
+        task.wait(.2)
+        prev:Destroy()
+    end)
+end
+
+-------------------------------------------------
+-- 6.  Daftar Toggle + fungsi
 -------------------------------------------------
 local function toggleESP(on)
-    for _,plr in ipairs(game:GetService("Players"):GetPlayers()) do
-        if plr ~= LP and plr.Character then
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr~=LP and plr.Character then
             local head = plr.Character:FindFirstChild("Head")
             if head then
                 if on then
@@ -217,23 +233,15 @@ local function toggleESP(on)
 end
 
 local function toggleFly(on)
-    local Humanoid = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
-    if not Humanoid then return end
-    if on then
-        Humanoid.WalkSpeed = 100
-        Humanoid.JumpPower = 100
-    else
-        Humanoid.WalkSpeed = 16
-        Humanoid.JumpPower = 50
-    end
+    Humanoid.WalkSpeed = on and 100 or 16
+    Humanoid.JumpPower = on and 100 or 50
 end
 
 local function toggleNoClip(on)
-    while on do
-        for _,v in ipairs(LP.Character:GetDescendants()) do
+    while on and task.wait() do
+        for _,v in ipairs(Character:GetDescendants()) do
             if v:IsA("BasePart") then v.CanCollide = false end
         end
-        task.wait()
     end
 end
 
@@ -241,13 +249,6 @@ local function toggleAutoCrate(on)
     while on do
         if Rem.opencrate then Rem.opencrate:FireServer() end
         task.wait(0.1)
-    end
-end
-
-local function toggleAutoTrade(on)
-    while on do
-        if Rem.autotrade then Rem.autotrade:FireServer() end
-        task.wait(3)
     end
 end
 
@@ -267,101 +268,38 @@ local function toggleAutoCollect(on)
     while on do
         for _,v in ipairs(workspace:GetDescendants()) do
             if v.Name:lower():find("money") then
-                firetouchinterest(LP.Character:FindFirstChild("HumanoidRootPart"), v, 0)
+                firetouchinterest(Character:FindFirstChild("HumanoidRootPart"), v, 0)
             end
         end
         task.wait(0.2)
     end
 end
 
--------------------------------------------------
--- 9.  Buat Tab & Toggle
--------------------------------------------------
-local function buildTab(name, icon, func)
-    local tabFrame = Instance.new("Frame")
-    tabFrame.Size = UDim2.new(1,-12,1,-100)
-    tabFrame.Position = UDim2.new(0,6,0,100)
-    tabFrame.BackgroundTransparency = 1
-    tabFrame.Visible = false
-    tabFrame.Name = name
-    tabFrame.Parent = main
-
-    local grid = Instance.new("UIGridLayout")
-    grid.CellSize = UDim2.new(0,220,0,46)
-    grid.CellPadding = UDim.new(0,8)
-    grid.Parent = tabFrame
-
-    -- wrapper
-    local function addToggle(label, iconId, callback)
-        local card = Instance.new("Frame")
-        card.BackgroundColor3 = Color3.fromRGB(30,30,30)
-        card.BorderSizePixel = 0
-        card.Parent = tabFrame
-        Instance.new("UICorner",card).CornerRadius = UDim.new(0,8)
-
-        local icon = Instance.new("ImageLabel")
-        icon.Size = UDim2.new(0,24,0,24)
-        icon.Position = UDim2.new(0,8,0.5,-12)
-        icon.Image = "rbxassetid://"..iconId
-        icon.BackgroundTransparency = 1
-        icon.Parent = card
-
-        local txt = Instance.new("TextLabel")
-        txt.Size = UDim2.new(1,-70,1,0)
-        txt.Position = UDim2.new(0,40,0,0)
-        txt.BackgroundTransparency = 1
-        txt.Font = Enum.Font.Gotham
-        txt.Text = label
-        txt.TextColor3 = Color3.fromRGB(255,255,255)
-        txt.TextSize = 14
-        txt.TextXAlignment = Enum.TextXAlignment.Left
-        txt.Parent = card
-
-        local sw = Instance.new("TextButton")
-        sw.Size = UDim2.new(0,48,0,24)
-        sw.Position = UDim2.new(1,-54,0.5,-12)
-        sw.BackgroundColor3 = Color3.fromRGB(60,60,60)
-        sw.BorderSizePixel = 0
-        sw.Text = ""
-        sw.Parent = card
-        Instance.new("UICorner",sw).CornerRadius = UDim.new(0,12)
-
-        local knob = Instance.new("Frame")
-        knob.Size = UDim2.new(0,20,0,20)
-        knob.Position = UDim2.new(0,2,0.5,-10)
-        knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
-        knob.BorderSizePixel = 0
-        knob.Parent = sw
-        Instance.new("UICorner",knob).CornerRadius = UDim.new(0,10)
-
-        local on = false
-        sw.MouseButton1Click:Connect(function()
-            on = not on
-            Tween:Create(knob,TweenInfo.new(.2),{Position = on and UDim2.new(1,-22,0.5,-10) or UDim2.new(0,2,0.5,-10)}):Play()
-            Tween:Create(sw,TweenInfo.new(.2),{BackgroundColor3 = on and Color3.fromRGB(255,40,40) or Color3.fromRGB(60,60,60)}):Play()
-            callback(on)
-        end)
+local function toggleAutoTrade(on)
+    while on do
+        if Rem.autotrade then Rem.autotrade:FireServer() end
+        task.wait(3)
     end
-
-    addToggle("Auto Crate",   6031075931, toggleAutoCrate)
-    addToggle("ESP",          6031280882, toggleESP)
-    addToggle("Fly / Speed",  6031225810, toggleFly)
-    addToggle("NoClip",       6035056483, toggleNoClip)
-    addToggle("∞ Money",      6034767619, toggleInfMoney)
-    addToggle("500× Luck",    6031225810, toggle500Luck)
-    addToggle("500× Money",   6034767619, toggle500Money)
-    addToggle("Auto Collect", 6031075931, toggleAutoCollect)
-    addToggle("Auto Trade",   6035056483, toggleAutoTrade)
-
-    return tabFrame
 end
 
-local tab1 = buildTab("Main", 6031280882)
-addTab("Main", 6031280882, function()
-    for _,v in ipairs(main:GetChildren()) do
-        if v.Name ~= "Main" and v:IsA("Frame") then v.Visible = false end
-    end
-    tab1.Visible = true
+-------------------------------------------------
+-- 7.  Populate toggles
+-------------------------------------------------
+addToggle("Auto Crate",    6031075931, toggleAutoCrate)
+addToggle("ESP",           6031280882, toggleESP)
+addToggle("Fly / Speed",   6031225810, toggleFly)
+addToggle("NoClip",        6035056483, toggleNoClip)
+addToggle("∞ Money",       6034767619, toggleInfMoney)
+addToggle("500× Luck",     6031225810, toggle500Luck)
+addToggle("500× Money",    6034767619, toggle500Money)
+addToggle("Auto Collect",  6031075931, toggleAutoCollect)
+addToggle("Auto Trade",    6035056483, toggleAutoTrade)
+
+-------------------------------------------------
+-- 8.  Auto-center on resize
+-------------------------------------------------
+game:GetService("RunService").RenderStepped:Connect(function()
+    main.Position = UDim2.new(0.5, -main.AbsoluteSize.X/2, 0.5, -main.AbsoluteSize.Y/2)
 end)
-addTab("Premium", 6034767619, function() end) -- placeholder
-activeTab = tab1.Visible = true
+
+print("✅ VORTEX-LUNA RED loaded – My Market ready")

@@ -1,533 +1,565 @@
--- VortxHub Interface Suite
--- Version 1.0.0
+--====================--
+--== VORTX HUB UI ==--
+--====================--
 
--- // SERVICES
-local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
-local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
 
--- // MAIN UI TABLE
-local VortxHub = {}
-VortxHub.__index = VortxHub
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
 
--- // CONFIGURATION
-VortxHub.configuration = {
-    Name = "VortxHub Interface Suite",
-    Version = "1.0.0",
-    Theme = {
-        Primary = Color3.fromRGB(255, 0, 0),
-        Secondary = Color3.fromRGB(40, 0, 0),
-        Background = Color3.fromRGB(30, 0, 0),
-        Text = Color3.fromRGB(255, 255, 255)
-    },
-    Keybind = Enum.KeyCode.RightControl,
-    IntroEnabled = true,
-    MobileSupport = true,
-    PC_Support = true
-}
+--====================--
+--== UI Configuration ==--
+--====================--
 
--- // CORE UI OBJECTS
-VortxHub.ui = nil
-VortxHub.window = nil
-VortxHub.notifications = {}
-VortxHub.configs = {}
-VortxHub.elements = {}
+local UI = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local IntroFrame = Instance.new("Frame")
+local IntroTextLabel = Instance.new("TextLabel")
+local TabsFrame = Instance.new("Frame")
+local ContentFrame = Instance.new("Frame")
+local LogoFrame = Instance.new("Frame")
+local LogoImage = Instance.new("ImageLabel")
+local DiscordButton = Instance.new("TextButton")
+local UICorner2 = Instance.new("UICorner")
+local ToggleButton = Instance.new("TextButton")
+local UICorner3 = Instance.new("UICorner")
+local MinimizeButton = Instance.new("TextButton")
+local UICorner4 = Instance.new("UICorner")
+local MaximizeButton = Instance.new("TextButton")
+local UICorner5 = Instance.new("UICorner")
+local CloseButton = Instance.new("TextButton")
+local UICorner6 = Instance.new("UICorner")
+local ExecutorLabel = Instance.new("TextLabel")
+local UserNameLabel = Instance.new("TextLabel")
+local InfoTabContent = Instance.new("Frame")
+local FeaturesTabContent = Instance.new("Frame")
+local SettingsTabContent = Instance.new("Frame")
+local SliderFrame = Instance.new("Frame")
+local SliderBackground = Instance.new("Frame")
+local SliderButton = Instance.new("TextButton")
+local UICorner7 = Instance.new("UICorner")
 
--- // CREATE MAIN UI
-function VortxHub.new()
-    local self = setmetatable({}, VortxHub)
-    
-    -- // CREATE SCREEN GUI
-    self.ui = Instance.new("ScreenGui")
-    self.ui.Name = "VortxHubUI"
-    self.ui.IgnoreGuiInset = true
-    self.ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    -- // CREATE MAIN WINDOW
-    self:createMainWindow()
-    
-    -- // CREATE TAB SYSTEM
-    self.tabs = {}
-    self.currentTab = nil
-    
-    return self
-end
+--====================--
+--== UI Properties ==--
+--====================--
 
-function VortxHub:createMainWindow()
-    -- // CREATE FRAME
-    self.window = Instance.new("Frame")
-    self.window.Size = UDim2.new(0, 550, 0, 600)
-    self.window.Position = UDim2.new(0.5, -275, 0.5, -300)
-    self.window.BackgroundColor3 = self.configuration.Theme.Background
-    self.window.BorderSizePixel = 0
-    self.window.CornerRadius = UDim.new(0, 15)
-    self.window.Parent = self.ui
-    
-    -- // CREATE BG EFFECT
-    local bgEffect = Instance.new("Frame")
-    bgEffect.Size = UDim2.new(1, 0, 1, 0)
-    bgEffect.BackgroundColor3 = self.configuration.Theme.Primary
-    bgEffect.BackgroundTransparency = 0.85
-    bgEffect.BorderSizePixel = 0
-    bgEffect.ZIndex = -1
-    bgEffect.Parent = self.window
-    
-    -- // CREATE TITLE BAR
-    local titleBar = Instance.new("Frame")
-    titleBar.Size = UDim2.new(1, 0, 0, 50)
-    titleBar.BackgroundColor3 = self.configuration.Theme.Primary
-    titleBar.Parent = self.window
-    
-    -- // CREATE TITLE TEXT
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 1, 0)
-    title.Text = self.configuration.Name
-    title.TextColor3 = self.configuration.Theme.Text
-    title.Font = Enum.Font.Cartoon
-    title.TextScaled = true
-    title.Parent = titleBar
-    
-    -- // CREATE CONTENT AREA
-    self.contentArea = Instance.new("ScrollingFrame")
-    self.contentArea.Size = UDim2.new(1, 0, 1, -50)
-    self.contentArea.Position = UDim2.new(0, 0, 0, 50)
-    self.contentArea.BackgroundColor3 = self.configuration.Theme.Secondary
-    self.contentArea.BorderSizePixel = 0
-    self.contentArea.ScrollBarThickness = 4
-    self.contentArea.Parent = self.window
-    
-    -- // ENABLE DRAGGING
-    self:enableDragging(titleBar)
-    
-    -- // CREATE CLOSE BUTTON
-    self:createCloseButton()
-end
+UI.Name = "VortXHubUI"
+UI.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-function VortxHub:enableDragging(dragPart)
-    local dragToggle = false
-    local dragOffset = Vector2.new(0, 0)
-    
-    dragPart.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-           input.UserInputType == Enum.UserInputType.Touch then
-            dragToggle = true
-            dragOffset = Vector2.new(
-                self.window.Position.X.Offset - input.Position.X,
-                self.window.Position.Y.Offset - input.Position.Y
-            )
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragToggle and 
-           (input.UserInputType == Enum.UserInputType.MouseMovement or 
-            input.UserInputType == Enum.UserInputType.Touch) then
-            self.window.Position = UDim2.new(
-                0.5, -self.window.Size.X.Offset/2 + input.Position.X + dragOffset.X,
-                0.5, -self.window.Size.Y.Offset/2 + input.Position.Y + dragOffset.Y
-            )
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-           input.UserInputType == Enum.UserInputType.Touch then
-            dragToggle = false
-        end
-    end)
-end
+--====================--
+--== Main Frame ==--
+--====================--
 
-function VortxHub:createCloseButton()
-    local closeButton = Instance.new("TextButton")
-    closeButton.Size = UDim2.new(0, 40, 0, 40)
-    closeButton.Position = UDim2.new(1, -40, 0, 0)
-    closeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    closeButton.Text = "X"
-    closeButton.TextColor3 = self.configuration.Theme.Text
-    closeButton.Font = Enum.Font.SourceSans
-    closeButton.Parent = self.window
-    
-    closeButton.MouseButton1Click:Connect(function()
-        self.ui.Enabled = false
-        task.wait(0.5)
-        self.ui.Enabled = true
-    end)
-end
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = UI
+MainFrame.Active = true
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.Size = UDim2.new(0, 400, 0, 550)
 
--- // TAB SYSTEM
-function VortxHub:createTab(name, callback)
-    -- // TAB CONTAINER
-    if not self.tabContainer then
-        self.tabContainer = Instance.new("Frame")
-        self.tabContainer.Size = UDim2.new(0, 80, 1, 0)
-        self.tabContainer.BackgroundColor3 = self.configuration.Theme.Secondary
-        self.tabContainer.Parent = self.window
-    end
-    
-    -- // CREATE TAB BUTTON
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = MainFrame
+
+--====================--
+--== Intro Frame ==--
+--====================--
+
+IntroFrame.Name = "IntroFrame"
+IntroFrame.Parent = MainFrame
+IntroFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+IntroFrame.BackgroundTransparency = 0.6
+IntroFrame.Size = UDim2.new(1, 0, 1, 0)
+
+UICorner2.CornerRadius = UDim.new(0, 15)
+UICorner2.Parent = IntroFrame
+
+IntroTextLabel.Name = "IntroTextLabel"
+IntroTextLabel.Parent = IntroFrame
+IntroTextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+IntroTextLabel.BackgroundTransparency = 1.0
+IntroTextLabel.Size = UDim2.new(0.8, 0, 0.3, 0)
+IntroTextLabel.Position = UDim2.new(0.1, 0, 0.4, 0)
+IntroTextLabel.Font = Enum.Font.SourceSansBold
+IntroTextLabel.Text = ""
+IntroTextLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+IntroTextLabel.TextScaled = true
+IntroTextLabel.TextSize = 30.0
+IntroTextLabel.TextWrapped = true
+IntroTextLabel.TextStrokeTransparency = 0.5
+
+--====================--
+--== Content Frame ==--
+--====================--
+
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+ContentFrame.Position = UDim2.new(0, 0, 0.15, 0)
+ContentFrame.Size = UDim2.new(1, 0, 0.75, 0)
+
+UICorner3.CornerRadius = UDim.new(0, 15)
+UICorner3.Parent = ContentFrame
+
+--====================--
+--== Tabs Frame ==--
+--====================--
+
+TabsFrame.Name = "TabsFrame"
+TabsFrame.Parent = MainFrame
+TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+TabsFrame.Size = UDim2.new(1, 0, 0.15, 0)
+
+--====================--
+--== Info Tab Content ==--
+--====================--
+
+InfoTabContent.Name = "InfoTabContent"
+InfoTabContent.Parent = ContentFrame
+InfoTabContent.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+InfoTabContent.Size = UDim2.new(1, 0, 1, 0)
+InfoTabContent.Visible = true
+
+UICorner7.CornerRadius = UDim.new(0, 10)
+UICorner7.Parent = InfoTabContent
+
+local ownerLabel = Instance.new("TextLabel")
+ownerLabel.Name = "OwnerLabel"
+ownerLabel.Parent = InfoTabContent
+ownerLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+ownerLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
+ownerLabel.Position = UDim2.new(0.1, 0, 0.1, 0)
+ownerLabel.Font = Enum.Font.SourceSansSemibold
+ownerLabel.Text = "OWNER OF VORTX HUB"
+ownerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ownerLabel.TextSize = 18.0
+ownerLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+--====================--
+--== Features Tab Content ==--
+--====================--
+
+FeaturesTabContent.Name = "FeaturesTabContent"
+FeaturesTabContent.Parent = ContentFrame
+FeaturesTabContent.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+FeaturesTabContent.Size = UDim2.new(1, 0, 1, 0)
+FeaturesTabContent.Visible = false
+
+UICorner8 = Instance.new("UICorner")
+UICorner8.CornerRadius = UDim.new(0, 10)
+UICorner8.Parent = FeaturesTabContent
+
+--====================--
+--== Settings Tab Content ==--
+--====================--
+
+SettingsTabContent.Name = "SettingsTabContent"
+SettingsTabContent.Parent = ContentFrame
+SettingsTabContent.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+SettingsTabContent.Size = UDim2.new(1, 0, 1, 0)
+SettingsTabContent.Visible = false
+
+UICorner9 = Instance.new("UICorner")
+UICorner9.CornerRadius = UDim.new(0, 10)
+UICorner9.Parent = SettingsTabContent
+
+--====================--
+--== Logo Frame ==--
+--====================--
+
+LogoFrame.Name = "LogoFrame"
+LogoFrame.Parent = TabsFrame
+LogoFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+LogoFrame.Position = UDim2.new(0.75, 0, 0.15, 0)
+LogoFrame.Size = UDim2.new(0.15, 0, 0.7, 0)
+
+LogoImage.Name = "LogoImage"
+LogoImage.Parent = LogoFrame
+LogoImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+LogoImage.BackgroundTransparency = 1.0
+LogoImage.Position = UDim2.new(0.1, 0, 0.15, 0)
+LogoImage.Size = UDim2.new(0.8, 0, 0.7, 0)
+LogoImage.Image = "rbxassetid://0" -- Replace with your logo image ID
+
+--====================--
+--== Discord Button ==--
+--====================--
+
+DiscordButton.Name = "DiscordButton"
+DiscordButton.Parent = ContentFrame
+DiscordButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+DiscordButton.Position = UDim2.new(0.75, 0, 0.3, 0)
+DiscordButton.Size = UDim2.new(0.2, 0, 0.1, 0)
+DiscordButton.Font = Enum.Font.SourceSans
+DiscordButton.Text = "Discord"
+DiscordButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+DiscordButton.TextSize = 14.0
+
+UICorner4.CornerRadius = UDim.new(0, 10)
+UICorner4.Parent = DiscordButton
+
+--====================--
+--== Toggle Button ==--
+--====================--
+
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ContentFrame
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+ToggleButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+ToggleButton.Size = UDim2.new(0.2, 0, 0.1, 0)
+ToggleButton.Font = Enum.Font.SourceSans
+ToggleButton.Text = "OFF"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 14.0
+
+UICorner5.CornerRadius = UDim.new(0, 10)
+UICorner5.Parent = ToggleButton
+
+--====================--
+--== Minimize Button ==--
+--====================--
+
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = MainFrame
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+MinimizeButton.Position = UDim2.new(0.7, 0, 0, 0)
+MinimizeButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+MinimizeButton.Font = Enum.Font.SourceSans
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+MinimizeButton.TextSize = 20.0
+
+UICorner6.CornerRadius = UDim.new(0, 10)
+UICorner6.Parent = MinimizeButton
+
+--====================--
+--== Maximize Button ==--
+--====================--
+
+MaximizeButton.Name = "MaximizeButton"
+MaximizeButton.Parent = MainFrame
+MaximizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+MaximizeButton.Position = UDim2.new(0.8, 0, 0, 0)
+MaximizeButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+MaximizeButton.Font = Enum.Font.SourceSans
+MaximizeButton.Text = "□"
+MaximizeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+MaximizeButton.TextSize = 20.0
+
+UICorner7.CornerRadius = UDim.new(0, 10)
+UICorner7.Parent = MaximizeButton
+
+--====================--
+--== Close Button ==--
+--====================--
+
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = MainFrame
+CloseButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+CloseButton.Position = UDim2.new(0.9, 0, 0, 0)
+CloseButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+CloseButton.Font = Enum.Font.SourceSans
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.TextSize = 20.0
+
+UICorner8.CornerRadius = UDim.new(0, 10)
+UICorner8.Parent = CloseButton
+
+--====================--
+--== Executor Label ==--
+--====================--
+
+ExecutorLabel.Name = "ExecutorLabel"
+ExecutorLabel.Parent = MainFrame
+ExecutorLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+ExecutorLabel.Position = UDim2.new(0.1, 0, 0, 0)
+ExecutorLabel.Size = UDim2.new(0.3, 0, 0.1, 0)
+ExecutorLabel.Font = Enum.Font.SourceSans
+ExecutorLabel.Text = "Executor: "
+ExecutorLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecutorLabel.TextSize = 14.0
+
+--====================--
+--== User Name Label ==--
+--====================--
+
+UserNameLabel.Name = "UserNameLabel"
+UserNameLabel.Parent = MainFrame
+UserNameLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+UserNameLabel.Position = UDim2.new(0.4, 0, 0, 0)
+UserNameLabel.Size = UDim2.new(0.3, 0, 0.1, 0)
+UserNameLabel.Font = Enum.Font.SourceSans
+UserNameLabel.Text = "User: " .. player.Name
+UserNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+UserNameLabel.TextSize = 14.0
+
+--====================--
+--== Slider ==--
+--====================--
+
+SliderFrame.Name = "SliderFrame"
+SliderFrame.Parent = ContentFrame
+SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SliderFrame.Position = UDim2.new(0.1, 0, 0.5, 0)
+SliderFrame.Size = UDim2.new(0.8, 0, 0.15, 0)
+
+UICorner9 = Instance.new("UICorner")
+UICorner9.CornerRadius = UDim.new(0, 10)
+UICorner9.Parent = SliderFrame
+
+SliderBackground.Name = "SliderBackground"
+SliderBackground.Parent = SliderFrame
+SliderBackground.BackgroundColor3 = Color3.fromRGB(70, 70, 80)
+SliderBackground.Position = UDim2.new(0.1, 0, 0.3, 0)
+SliderBackground.Size = UDim2.new(0.8, 0, 0.4, 0)
+
+SliderButton.Name = "SliderButton"
+SliderButton.Parent = SliderBackground
+SliderButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+SliderButton.Size = UDim2.new(0, 20, 0, 20)
+SliderButton.Position = UDim2.new(0, 0, 0.5, -10)
+SliderButton.Font = Enum.Font.SourceSans
+SliderButton.Text = ""
+SliderButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+SliderButton.TextSize = 14.0
+
+UICorner10 = Instance.new("UICorner")
+UICorner10.CornerRadius = UDim.new(0, 10)
+UICorner10.Parent = SliderButton
+
+--====================--
+--== UI Functions ==--
+--====================--
+
+local function createTab(name, position)
     local tab = Instance.new("TextButton")
-    tab.Size = UDim2.new(1, 0, 0, 40)
-    tab.BackgroundColor3 = self.configuration.Theme.Background
-    tab.AutoButtonColor = false
-    tab.Text = name
-    tab.TextColor3 = self.configuration.Theme.Text
+    tab.Name = name
+    tab.Parent = TabsFrame
+    tab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    tab.Position = UDim2.new(position, 0, 0, 0)
+    tab.Size = UDim2.new(0.25, 0, 1, 0)
     tab.Font = Enum.Font.SourceSans
-    tab.Parent = self.tabContainer
-    
-    -- // CUSTOM ICON
-    local icon = Instance.new("ImageLabel")
-    icon.Size = UDim2.new(1, 0, 1, 0)
-    icon.Image = "rbxassetid://YOUR_LOGO_ID" -- Replace with your logo
-    icon.BackgroundTransparency = 1
-    icon.Parent = tab
-    
-    -- // TAB CONTENT FRAME
-    local content = Instance.new("Frame")
-    content.Size = UDim2.new(1, -80, 1, 0)
-    content.Position = UDim2.new(0, 80, 0, 0)
-    content.BackgroundColor3 = self.configuration.Theme.Background
-    content.Parent = self.window
-    
-    content.Visible = false
-    
-    -- // TAB INTERACTION
-    tab.MouseEnter:Connect(function()
-        TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
-    end)
-    
-    tab.MouseLeave:Connect(function()
-        if tab ~= self.currentTab then
-            TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Background}):Play()
-        end
-    end)
-    
+    tab.Text = name
+    tab.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tab.TextSize = 14.0
+
+    local tabCorner = Instance.new("UICorner")
+    tabCorner.CornerRadius = UDim.new(0, 10)
+    tabCorner.Parent = tab
+
     tab.MouseButton1Click:Connect(function()
-        -- // HIDE PREVIOUS TABS
-        if self.currentTab then
-            self.currentTab.Visible = false
-        end
-        
-        -- // SHOW NEW TAB
-        content.Visible = true
-        self.currentTab = content
-        
-        -- // UPDATE UI
-        for _, t in ipairs(self.tabContainer:GetChildren()) do
-            if t:IsA("TextButton") then
-                TweenService:Create(t, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Background}):Play()
-            end
-        end
-        
-        TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
-        
-        -- // RUN CALLBACK
-        if callback then callback(content) end
+        InfoTabContent.Visible = name == "Info"
+        FeaturesTabContent.Visible = name == "Features"
+        SettingsTabContent.Visible = name == "Settings"
     end)
-    
-    -- // STORE TAB REFERENCE
-    table.insert(self.tabs, {button = tab, content = content})
-    
-    return content
+
+    return tab
 end
 
--- // ELEMENT CREATION
-function VortxHub:createLabel(parent, text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -20, 0, 40)
-    label.Position = UDim2.new(0, 10, 0, 10)
-    label.Text = text
-    label.TextColor3 = self.configuration.Theme.Text
-    label.Font = Enum.Font.SourceSans
-    label.Parent = parent
-    
-    return label
-end
-
-function VortxHub:createButton(parent, text, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -20, 0, 40)
-    button.Position = UDim2.new(0, 10, 0, 10)
-    button.Text = text
-    button.TextColor3 = self.configuration.Theme.Text
-    button.Font = Enum.Font.SourceSans
-    button.BackgroundColor3 = self.configuration.Theme.Primary
-    button.Parent = parent
-    
-    button.MouseButton1Click:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 0, 0)}):Play()
-        task.wait(0.2)
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
-        
-        if callback then callback() end
-    end)
-    
-    return button
-end
-
-function VortxHub:createToggle(parent, label, callback)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, -20, 0, 40)
-    toggleFrame.Position = UDim2.new(0, 10, 0, 10)
-    toggleFrame.BackgroundColor3 = self.configuration.Theme.Background
-    toggleFrame.Parent = parent
-    
-    local toggleLabel = Instance.new("TextLabel")
-    toggleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    toggleLabel.Text = label
-    toggleLabel.TextColor3 = self.configuration.Theme.Text
-    toggleLabel.Font = Enum.Font.SourceSans
-    toggleLabel.Parent = toggleFrame
-    
-    local toggleSwitch = Instance.new("Frame")
-    toggleSwitch.Size = UDim2.new(0, 50, 0, 25)
-    toggleSwitch.Position = UDim2.new(0.6, 0, 0.5, -12.5)
-    toggleSwitch.BackgroundColor3 = self.configuration.Theme.Secondary
-    toggleSwitch.CornerRadius = UDim.new(0, 15)
-    toggleSwitch.Parent = toggleFrame
-    
-    local toggleKnob = Instance.new("Frame")
-    toggleKnob.Size = UDim2.new(0, 25, 0, 25)
-    toggleKnob.Position = UDim2.new(0, 0, 0, 0)
-    toggleKnob.BackgroundColor3 = self.configuration.Theme.Primary
-    toggleKnob.CornerRadius = UDim.new(0, 15)
-    toggleKnob.Parent = toggleSwitch
-    
-    local isEnabled = false
-    
-    toggleSwitch.MouseButton1Click:Connect(function()
-        isEnabled = not isEnabled
-        
-        if isEnabled then
-            TweenService:Create(toggleSwitch, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
-            TweenService:Create(toggleKnob, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Text, Position = UDim2.new(1, -25, 0, 0)}):Play()
-        else
-            TweenService:Create(toggleSwitch, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Secondary}):Play()
-            TweenService:Create(toggleKnob, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary, Position = UDim2.new(0, 0, 0, 0)}):Play()
-        end
-        
-        if callback then callback(isEnabled) end
-    end)
-    
-    return toggleFrame
-end
-
-function VortxHub:createSlider(parent, label, min, max, callback)
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, -20, 0, 40)
-    sliderFrame.Position = UDim2.new(0, 10, 0, 10)
-    sliderFrame.BackgroundColor3 = self.configuration.Theme.Background
-    sliderFrame.Parent = parent
-    
-    local sliderLabel = Instance.new("TextLabel")
-    sliderLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    sliderLabel.Text = label
-    sliderLabel.TextColor3 = self.configuration.Theme.Text
-    sliderLabel.Font = Enum.Font.SourceSans
-    sliderLabel.Parent = sliderFrame
-    
-    local sliderTrack = Instance.new("Frame")
-    sliderTrack.Size = UDim2.new(0.6, 0, 0, 10)
-    sliderTrack.Position = UDim2.new(0.6, 0, 0.5, -5)
-    sliderTrack.BackgroundColor3 = self.configuration.Theme.Secondary
-    sliderTrack.CornerRadius = UDim.new(0, 5)
-    sliderTrack.Parent = sliderFrame
-    
-    local sliderKnob = Instance.new("Frame")
-    sliderKnob.Size = UDim2.new(0, 25, 0, 25)
-    sliderKnob.Position = UDim2.new(0, 0, 0.5, -12.5)
-    sliderKnob.BackgroundColor3 = self.configuration.Theme.Primary
-    sliderKnob.CornerRadius = UDim.new(0, 15)
-    sliderKnob.Parent = sliderTrack
-    
-    local sliderValue = Instance.new("TextLabel")
-    sliderValue.Size = UDim2.new(0.3, 0, 0, 25)
-    sliderValue.Position = UDim2.new(0.3, 0, 0, 15)
-    sliderValue.Text = min
-    sliderValue.TextColor3 = self.configuration.Theme.Text
-    sliderValue.Font = Enum.Font.SourceSans
-    sliderValue.Parent = sliderFrame
-    
-    local currentValue = min
-    
-    sliderTrack.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local position = input.Position.X - sliderTrack.AbsolutePosition.X
-            local percentage = math.clamp(position / sliderTrack.AbsoluteSize.X, 0, 1)
-            currentValue = math.floor(min + (max - min) * percentage)
-            
-            sliderValue.Text = currentValue
-            sliderKnob.Position = UDim2.new(percentage, -12.5, 0.5, -12.5)
-            
-            if callback then callback(currentValue) end
-        end
-    end)
-    
-    return sliderFrame
-end
-
--- // NOTIFICATION SYSTEM
-function VortxHub:showNotification(text, duration)
-    local notification = Instance.new("TextLabel")
-    notification.Size = UDim2.new(0, 300, 0, 50)
-    notification.Position = UDim2.new(0.5, -150, 0.5, -250)
-    notification.Text = text
-    notification.TextColor3 = self.configuration.Theme.Text
-    notification.Font = Enum.Font.SourceSans
-    notification.BackgroundTransparency = 0.7
-    notification.BackgroundColor3 = self.configuration.Theme.Background
-    notification.CornerRadius = UDim.new(0, 10)
-    notification.Parent = self.ui
-    
-    TweenService:Create(notification, TweenInfo.new(0.3), {TextTransparency = 0, BackgroundTransparency = 0.3}):Play()
-    
-    table.insert(self.notifications, notification)
-    
-    task.wait(duration or 3)
-    TweenService:Create(notification, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-    
-    task.wait(0.3)
-    for i, v in ipairs(self.notifications) do
-        if v == notification then
-            table.remove(self.notifications, i)
-            break
-        end
-    end
-    notification:Destroy()
-end
-
--- // CONFIGURATION SYSTEM
-function VortxHub:saveConfig(name)
-    local config = {
-        windowSize = self.window.Size,
-        windowPosition = self.window.Position,
-        elements = {}
-    }
-    
-    for _, element in ipairs(self.elements) do
-        config.elements[element.name] = {
-            position = element.Position,
-            size = element.Size,
-            value = element.value or false
-        }
-    end
-    
-    self.configs[name] = config
-    self:showNotification("Config saved: " .. name, 3)
-end
-
-function VortxHub:loadConfig(name)
-    if not self.configs[name] then return end
-    
-    local config = self.configs[name]
-    self.window.Size = config.windowSize
-    self.window.Position = config.windowPosition
-    
-    for elementName, elementConfig in pairs(config.elements) do
-        for _, element in ipairs(self.elements) do
-            if element.name == elementName then
-                element.Position = elementConfig.position
-                element.Size = elementConfig.size
-                if elementConfig.value ~= nil then
-                    if element.toggle then
-                        element.toggle:setState(elementConfig.value)
-                    end
-                end
-                break
-            end
-        end
-    end
-    
-    self:showNotification("Config loaded: " .. name, 3)
-end
-
--- // INTRO ANIMATION
-function VortxHub:startIntro()
-    if not self.configuration.IntroEnabled then return end
-    
-    local introScreen = Instance.new("ScreenGui")
-    introScreen.Name = "VortxIntro"
-    introScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    local introFrame = Instance.new("Frame")
-    introFrame.Size = UDim2.new(1, 0, 1, 0)
-    introFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    introFrame.Parent = introScreen
-    
-    local introText = Instance.new("TextLabel")
-    introText.Size = UDim2.new(0.8, 0, 0.8, 0)
-    introText.Position = UDim2.new(0.1, 0, 0.1, 0)
-    introText.Text = ""
-    introText.TextColor3 = self.configuration.Theme.Primary
-    introText.Font = Enum.Font.Bauhaus
-    introText.TextScaled = true
-    introText.TextStrokeTransparency = 0.5
-    introText.Parent = introFrame
-    
+local function animateIntro()
     local letters = {"V", "O", "R", "T", "X"}
-    local delay = 0
-    
-    for _, letter in ipairs(letters) do
-        delay += 0.5
-        task.spawn(function()
-            task.wait(delay)
-            introText.Text = introText.Text .. letter
+    local letterDelay = 0.3
+    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+    for i, letter in ipairs(letters) do
+        local letterTween = TweenService:Create(IntroTextLabel, tweenInfo, {Text = table.concat(letters, " ", 1, i)})
+        letterTween:Play()
+        wait(letterDelay)
+    end
+
+    wait(1)
+    local fadeOut = TweenService:Create(IntroFrame, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
+    fadeOut:Play()
+    wait(1)
+    IntroFrame:Destroy()
+end
+
+local function createToggle(parent, position, size)
+    local toggle = Instance.new("TextButton")
+    toggle.Name = "Toggle"
+    toggle.Parent = parent
+    toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    toggle.Position = position
+    toggle.Size = size
+    toggle.Font = Enum.Font.SourceSans
+    toggle.Text = "OFF"
+    toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggle.TextSize = 14.0
+
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 10)
+    toggleCorner.Parent = toggle
+
+    local function toggleSwitch()
+        if toggle.Text == "OFF" then
+            toggle.Text = "ON"
+            toggle.TextColor3 = Color3.fromRGB(0, 255, 0)
+            toggle.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+            local tween = TweenService:Create(toggle, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(0, 100, 0)})
+            tween:Play()
+        else
+            toggle.Text = "OFF"
+            toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+            local tween = TweenService:Create(toggle, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(50, 50, 60)})
+            tween:Play()
+        end
+    end
+
+    toggle.MouseButton1Click:Connect(toggleSwitch)
+
+    return toggle
+end
+
+local function createSlider()
+    local isDragging = false
+    local value = 0
+
+    SliderButton.MouseButton1Down:Connect(function()
+        isDragging = true
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local newPosition = math.clamp((input.Position.X - SliderBackground.AbsolutePosition.X) / SliderBackground.AbsoluteSize.X, 0, 1)
+            value = newPosition
+            SliderButton.Position = UDim2.new(value, 0, 0.5, -10)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
+
+    return {
+        getValue = function()
+            return value
+        end,
+        setValue = function(newValue)
+            value = math.clamp(newValue, 0, 1)
+            SliderButton.Position = UDim2.new(value, 0, 0.5, -10)
+        end
+    }
+end
+
+--====================--
+--== Initialize UI ==--
+--====================--
+
+-- Create tabs
+local infoTab = createTab("Info", 0)
+local featuresTab = createTab("Features", 0.25)
+local settingsTab = createTab("Settings", 0.5)
+
+-- Animate intro
+animateIntro()
+
+-- Create toggle
+local myToggle = createToggle(ContentFrame, UDim2.new(0.1, 0, 0.3, 0), UDim2.new(0.2, 0, 0.1, 0))
+
+-- Create slider
+local mySlider = createSlider()
+
+--====================--
+--== Mobile Support ==--
+--====================--
+
+local isDragging = false
+local dragPosition = nil
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true
+        local mousePosition = input.Position
+        dragPosition = Vector2.new(mousePosition.X - MainFrame.AbsolutePosition.X, mousePosition.Y - MainFrame.AbsolutePosition.Y)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                isDragging = false
+            end
         end)
     end
-    
-    task.wait(3)
-    introScreen:Destroy()
-end
+end)
 
--- // MOBILE SUPPORT
-function VortxHub:enableMobileSupport()
-    if not self.configuration.MobileSupport then return end
-    
-    local touchGui = Instance.new("TouchGui")
-    touchGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-    
-    local touchFrame = Instance.new("Frame")
-    touchFrame.Size = UDim2.new(1, 0, 1, 0)
-    touchFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    touchFrame.BackgroundTransparency = 1
-    touchFrame.Parent = touchGui
-    
-    touchFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            self:enableDragging(touchFrame)
-        end
-    end)
-end
-
--- // PUBLIC METHODS
-function VortxHub:Create()
-    if game.Players.LocalPlayer and 
-       game.Players.LocalPlayer:FindFirstChild("PlayerGui") then
-        game.Players.LocalPlayer.PlayerGui:FindFirstChild("VortxHubUI"):Destroy()
-        self.ui.Parent = game.Players.LocalPlayer.PlayerGui
+UserInputService.InputChanged:Connect(function(input)
+    if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local newPosition = Vector2.new(input.Position.X - dragPosition.X, input.Position.Y - dragPosition.Y)
+        MainFrame.Position = UDim2.new(0.5, newPosition.X - MainFrame.AbsoluteSize.X / 2, 0.5, newPosition.Y - MainFrame.AbsoluteSize.Y / 2)
     end
-    
-    self:startIntro()
-    self:enableMobileSupport()
-    
-    return self.ui
-end
+end)
 
-function VortxHub:GetTheme()
-    return self.configuration.Theme
-end
+--====================--
+--== UI Interactions ==--
+--====================--
 
-function VortxHub:SetTheme(theme)
-    self.configuration.Theme = theme
-    self:updateUI()
-end
+-- Discord button
+DiscordButton.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/TXebwYcPaB") -- Replace with your Discord link
+    print("Discord link copied to clipboard!")
+end)
 
-function VortxHub:updateUI()
-    -- // UPDATE COLORS
-    self.window.BackgroundColor3 = self.configuration.Theme.Background
-    self.tabContainer.BackgroundColor3 = self.configuration.Theme.Secondary
-    for _, tab in ipairs(self.tabs) do
-        tab.button.BackgroundColor3 = self.configuration.Theme.Background
-        tab.content.BackgroundColor3 = self.configuration.Theme.Background
+-- Toggle button
+local isToggled = false
+ToggleButton.MouseButton1Click:Connect(function()
+    isToggled = not isToggled
+    if isToggled then
+        ToggleButton.Text = "ON"
+        ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+        local tween = TweenService:Create(ToggleButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(0, 100, 0)})
+        tween:Play()
+    else
+        ToggleButton.Text = "OFF"
+        ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        local tween = TweenService:Create(ToggleButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(50, 50, 60)})
+        tween:Play()
     end
-end
+end)
+
+-- Minimize button
+MinimizeButton.MouseButton1Click:Connect(function()
+    local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 400, 0, 50)})
+    tween:Play()
+end)
+
+-- Maximize button
+MaximizeButton.MouseButton1Click:Connect(function()
+    local tween = TweenService:Create>MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 400, 0, 550)})
+    tween:Play()
+end)
+
+-- Close button
+CloseButton.MouseButton1Click:Connect(function()
+    UI:Destroy()
+end)
+
+--====================--
+--== Final Touches ==--
+--====================--
+
+-- Make UI draggable
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDragging = true
+    end
+end)
+
+MainFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDragging = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)

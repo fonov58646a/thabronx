@@ -531,25 +531,3 @@ function VortxHub:updateUI()
         tab.content.BackgroundColor3 = self.configuration.Theme.Background
     end
 end
-
--- // README DOCUMENTATION
-local readme = [[
-# VortxHub Interface Suite Documentation
-
-## Table of Contents
-1. Introduction
-2. Basic Usage
-3. Component Reference
-4. Configuration
-5. Examples
-
-## 1. Introduction
-VortxHub Interface Suite is a modern, customizable UI framework for Roblox. It provides a comprehensive set of UI components with smooth animations and responsive design.
-
-## 2. Basic Usage
-
-### Initialize the UI
-```lua
-local VortxHub = require(game.ReplicatedStorage:WaitForChild("VortxHub"))
-local ui = VortxHub.new()
-ui:Create()

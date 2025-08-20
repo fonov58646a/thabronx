@@ -1,352 +1,555 @@
---[[
-    VORTX HUB v4.0 – My Market
-    Transparan glass, cinematic intro, full toggles
-    Discord: https://discord.gg/PrmHmDfT
-]]
+-- VortxHub Interface Suite
+-- Version 1.0.0
 
---// Services
-local Players   = game:GetService("Players")
-local Tween     = game:GetService("TweenService")
-local CoreGui   = game:GetService("CoreGui")
-local UIS       = game:GetService("UserInputService")
-local Replicated= game:GetService("ReplicatedStorage")
-local Run       = game:GetService("RunService")
+-- // SERVICES
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
 
-local LP = Players.LocalPlayer
-local Character = LP.Character or LP.CharacterAdded:Wait()
-local Humanoid  = Character:WaitForChild("Humanoid")
+-- // MAIN UI TABLE
+local VortxHub = {}
+VortxHub.__index = VortxHub
 
--------------------------------------------------
--- 1.  Anti-kick
--------------------------------------------------
-local mt = getrawmetatable(game)
-setreadonly(mt,false)
-local old = mt.__namecall
-mt.__namecall = newcclosure(function(...)
-    if getnamecallmethod():lower()=="kick" then return end
-    return old(...)
-end)
+-- // CONFIGURATION
+VortxHub.configuration = {
+    Name = "VortxHub Interface Suite",
+    Version = "1.0.0",
+    Theme = {
+        Primary = Color3.fromRGB(255, 0, 0),
+        Secondary = Color3.fromRGB(40, 0, 0),
+        Background = Color3.fromRGB(30, 0, 0),
+        Text = Color3.fromRGB(255, 255, 255)
+    },
+    Keybind = Enum.KeyCode.RightControl,
+    IntroEnabled = true,
+    MobileSupport = true,
+    PC_Support = true
+}
 
--------------------------------------------------
--- 2.  Remote Cache
--------------------------------------------------
-local Rem = {}
-for _,v in pairs(Replicated:GetDescendants()) do
-    if v:IsA("RemoteEvent") then Rem[v.Name:lower()] = v end
+-- // CORE UI OBJECTS
+VortxHub.ui = nil
+VortxHub.window = nil
+VortxHub.notifications = {}
+VortxHub.configs = {}
+VortxHub.elements = {}
+
+-- // CREATE MAIN UI
+function VortxHub.new()
+    local self = setmetatable({}, VortxHub)
+    
+    -- // CREATE SCREEN GUI
+    self.ui = Instance.new("ScreenGui")
+    self.ui.Name = "VortxHubUI"
+    self.ui.IgnoreGuiInset = true
+    self.ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- // CREATE MAIN WINDOW
+    self:createMainWindow()
+    
+    -- // CREATE TAB SYSTEM
+    self.tabs = {}
+    self.currentTab = nil
+    
+    return self
 end
 
--------------------------------------------------
--- 3.  Cinematic Intro (V O R T X)
--------------------------------------------------
-local intro = Instance.new("ScreenGui")
-intro.Name = "VORTXIntro"
-intro.Parent = CoreGui
-intro.ResetOnSpawn = false
-
-local bg = Instance.new("Frame")
-bg.Size = UDim2.new(1,0,1,0)
-bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
-bg.BackgroundTransparency = 0
-bg.Parent = intro
-
-local txt = Instance.new("TextLabel")
-txt.Size = UDim2.new(0, 400, 0, 120)
-txt.Position = UDim2.new(0.5, -200, 0.5, -60)
-txt.BackgroundTransparency = 1
-txt.Font = Enum.Font.GothamBold
-txt.Text = ""
-txt.TextColor3 = Color3.fromRGB(255,40,40)
-txt.TextSize = 96
-txt.Parent = bg
-
-local word = "VORTX"
-for i = 1, #word do
-    txt.Text = word:sub(1, i) .. " "
-    task.wait(0.3)
+function VortxHub:createMainWindow()
+    -- // CREATE FRAME
+    self.window = Instance.new("Frame")
+    self.window.Size = UDim2.new(0, 550, 0, 600)
+    self.window.Position = UDim2.new(0.5, -275, 0.5, -300)
+    self.window.BackgroundColor3 = self.configuration.Theme.Background
+    self.window.BorderSizePixel = 0
+    self.window.CornerRadius = UDim.new(0, 15)
+    self.window.Parent = self.ui
+    
+    -- // CREATE BG EFFECT
+    local bgEffect = Instance.new("Frame")
+    bgEffect.Size = UDim2.new(1, 0, 1, 0)
+    bgEffect.BackgroundColor3 = self.configuration.Theme.Primary
+    bgEffect.BackgroundTransparency = 0.85
+    bgEffect.BorderSizePixel = 0
+    bgEffect.ZIndex = -1
+    bgEffect.Parent = self.window
+    
+    -- // CREATE TITLE BAR
+    local titleBar = Instance.new("Frame")
+    titleBar.Size = UDim2.new(1, 0, 0, 50)
+    titleBar.BackgroundColor3 = self.configuration.Theme.Primary
+    titleBar.Parent = self.window
+    
+    -- // CREATE TITLE TEXT
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 1, 0)
+    title.Text = self.configuration.Name
+    title.TextColor3 = self.configuration.Theme.Text
+    title.Font = Enum.Font.Cartoon
+    title.TextScaled = true
+    title.Parent = titleBar
+    
+    -- // CREATE CONTENT AREA
+    self.contentArea = Instance.new("ScrollingFrame")
+    self.contentArea.Size = UDim2.new(1, 0, 1, -50)
+    self.contentArea.Position = UDim2.new(0, 0, 0, 50)
+    self.contentArea.BackgroundColor3 = self.configuration.Theme.Secondary
+    self.contentArea.BorderSizePixel = 0
+    self.contentArea.ScrollBarThickness = 4
+    self.contentArea.Parent = self.window
+    
+    -- // ENABLE DRAGGING
+    self:enableDragging(titleBar)
+    
+    -- // CREATE CLOSE BUTTON
+    self:createCloseButton()
 end
-task.wait(0.7)
-Tween:Create(bg, TweenInfo.new(0.7), {BackgroundTransparency = 1}):Play()
-task.wait(0.7)
-intro:Destroy()
 
--------------------------------------------------
--- 4.  Main UI (Glass + Transparan)
--------------------------------------------------
-local gui = Instance.new("ScreenGui")
-gui.Name = "VORTXHub"
-gui.Parent = CoreGui
-gui.ResetOnSpawn = false
+function VortxHub:enableDragging(dragPart)
+    local dragToggle = false
+    local dragOffset = Vector2.new(0, 0)
+    
+    dragPart.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+           input.UserInputType == Enum.UserInputType.Touch then
+            dragToggle = true
+            dragOffset = Vector2.new(
+                self.window.Position.X.Offset - input.Position.X,
+                self.window.Position.Y.Offset - input.Position.Y
+            )
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragToggle and 
+           (input.UserInputType == Enum.UserInputType.MouseMovement or 
+            input.UserInputType == Enum.UserInputType.Touch) then
+            self.window.Position = UDim2.new(
+                0.5, -self.window.Size.X.Offset/2 + input.Position.X + dragOffset.X,
+                0.5, -self.window.Size.Y.Offset/2 + input.Position.Y + dragOffset.Y
+            )
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+           input.UserInputType == Enum.UserInputType.Touch then
+            dragToggle = false
+        end
+    end)
+end
 
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 640, 0, 440)
-main.AnchorPoint = Vector2.new(0.5,0.5)
-main.Position = UDim2.new(0.5, 0, 0.5, 0)
-main.BackgroundColor3 = Color3.fromRGB(25,25,25)
-main.BackgroundTransparency = 0.25
-main.BorderSizePixel = 0
-main.Parent = gui
-Instance.new("UICorner",main).CornerRadius = UDim.new(0,20)
+function VortxHub:createCloseButton()
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 40, 0, 40)
+    closeButton.Position = UDim2.new(1, -40, 0, 0)
+    closeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    closeButton.Text = "X"
+    closeButton.TextColor3 = self.configuration.Theme.Text
+    closeButton.Font = Enum.Font.SourceSans
+    closeButton.Parent = self.window
+    
+    closeButton.MouseButton1Click:Connect(function()
+        self.ui.Enabled = false
+        task.wait(0.5)
+        self.ui.Enabled = true
+    end)
+end
 
--- blur behind
-local blur = Instance.new("ImageLabel")
-blur.Image = "rbxassetid://13116647614"
-blur.Size = UDim2.new(1,40,1,40)
-blur.Position = UDim2.new(0,-20,0,-20)
-blur.ImageColor3 = Color3.fromRGB(255,40,40)
-blur.ImageTransparency = 0.85
-blur.BackgroundTransparency = 1
-blur.ScaleType = Enum.ScaleType.Slice
-blur.SliceCenter = Rect.new(24,24,152,152)
-blur.ZIndex = -1
-blur.Parent = main
-
--------------------------------------------------
--- 5.  Header Penuh Gambar + Info
--------------------------------------------------
-local head = Instance.new("Frame")
-head.Size = UDim2.new(1,0,0,120)
-head.BackgroundColor3 = Color3.fromRGB(30,30,30)
-head.BackgroundTransparency = 0.4
-head.BorderSizePixel = 0
-head.Parent = main
-Instance.new("UICorner",head).CornerRadius = UDim.new(0,20)
-
-local headImg = Instance.new("ImageLabel")
-headImg.Size = UDim2.new(1,0,1,0)
-headImg.Image = "rbxassetid://13116647614"
-headImg.ImageColor3 = Color3.fromRGB(255,40,40)
-headImg.ImageTransparency = 0.6
-headImg.ScaleType = Enum.ScaleType.Crop
-headImg.Parent = head
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,-20,0,40)
-title.Position = UDim2.new(0,10,0,10)
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.GothamBold
-title.Text = "VORTX HUB"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.TextSize = 28
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = head
-
-local desc = Instance.new("TextLabel")
-desc.Size = UDim2.new(1,-20,0,60)
-desc.Position = UDim2.new(0,10,0,50)
-desc.BackgroundTransparency = 1
-desc.Font = Enum.Font.Gotham
-desc.Text = "Modern glass UI for My Market.\nToggle features below."
-desc.TextColor3 = Color3.fromRGB(220,220,220)
-desc.TextSize = 14
-desc.TextWrapped = true
-desc.TextXAlignment = Enum.TextXAlignment.Left
-desc.Parent = head
-
-local close = Instance.new("TextButton")
-close.Size = UDim2.new(0,36,0,36)
-close.Position = UDim2.new(1,-46,0.5,-18)
-close.BackgroundTransparency = 1
-close.Font = Enum.Font.SourceSans
-close.Text = "✕"
-close.TextColor3 = Color3.fromRGB(255,255,255)
-close.TextSize = 24
-close.Parent = head
-close.MouseButton1Click:Connect(function() gui:Destroy() end)
-
--- drag
-local dragging, startPos, startMouse
-head.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        startPos = main.Position
-        startMouse = inp.Position
-        inp.Changed:Connect(function()
-            if inp.UserInputState == Enum.UserInputState.End then dragging=false end
-        end)
+-- // TAB SYSTEM
+function VortxHub:createTab(name, callback)
+    -- // TAB CONTAINER
+    if not self.tabContainer then
+        self.tabContainer = Instance.new("Frame")
+        self.tabContainer.Size = UDim2.new(0, 80, 1, 0)
+        self.tabContainer.BackgroundColor3 = self.configuration.Theme.Secondary
+        self.tabContainer.Parent = self.window
     end
-end)
-UIS.InputChanged:Connect(function(inp)
-    if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = inp.Position - startMouse
-        main.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset+delta.X,
-                                  startPos.Y.Scale,startPos.Y.Offset+delta.Y)
-    end
-end)
-
--------------------------------------------------
--- 6.  Grid Toggle
--------------------------------------------------
-local grid = Instance.new("Frame")
-grid.Size = UDim2.new(1,-24,1,-144)
-grid.Position = UDim2.new(0,12,0,132)
-grid.BackgroundTransparency = 1
-grid.Parent = main
-
-local lay = Instance.new("UIGridLayout")
-lay.CellSize = UDim2.new(0,290,0,60)
-lay.CellPadding = UDim.new(0,12)
-lay.Parent = grid
-
-local function addToggle(name, iconId, callback)
-    local card = Instance.new("Frame")
-    card.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    card.BackgroundTransparency = 0.3
-    card.BorderSizePixel = 0
-    card.Parent = grid
-    Instance.new("UICorner",card).CornerRadius = UDim.new(0,16)
-
+    
+    -- // CREATE TAB BUTTON
+    local tab = Instance.new("TextButton")
+    tab.Size = UDim2.new(1, 0, 0, 40)
+    tab.BackgroundColor3 = self.configuration.Theme.Background
+    tab.AutoButtonColor = false
+    tab.Text = name
+    tab.TextColor3 = self.configuration.Theme.Text
+    tab.Font = Enum.Font.SourceSans
+    tab.Parent = self.tabContainer
+    
+    -- // CUSTOM ICON
     local icon = Instance.new("ImageLabel")
-    icon.Size = UDim2.new(0,28,0,28)
-    icon.Position = UDim2.new(0,12,0.5,-14)
-    icon.Image = "rbxassetid://"..iconId
+    icon.Size = UDim2.new(1, 0, 1, 0)
+    icon.Image = "rbxassetid://YOUR_LOGO_ID" -- Replace with your logo
     icon.BackgroundTransparency = 1
-    icon.Parent = card
-
-    local txt = Instance.new("TextLabel")
-    txt.Size = UDim2.new(1,-90,1,0)
-    txt.Position = UDim2.new(0,48,0,0)
-    txt.BackgroundTransparency = 1
-    txt.Font = Enum.Font.Gotham
-    txt.Text = name
-    txt.TextColor3 = Color3.fromRGB(255,255,255)
-    txt.TextSize = 16
-    txt.TextXAlignment = Enum.TextXAlignment.Left
-    txt.Parent = card
-
-    local sw = Instance.new("TextButton")
-    sw.Size = UDim2.new(0,52,0,26)
-    sw.Position = UDim2.new(1,-64,0.5,-13)
-    sw.BackgroundColor3 = Color3.fromRGB(70,70,70)
-    sw.BorderSizePixel = 0
-    sw.Text = ""
-    sw.Parent = card
-    Instance.new("UICorner",sw).CornerRadius = UDim.new(0,13)
-
-    local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0,22,0,22)
-    knob.Position = UDim2.new(0,2,0.5,-11)
-    knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
-    knob.BorderSizePixel = 0
-    knob.Parent = sw
-    Instance.new("UICorner",knob).CornerRadius = UDim.new(0,11)
-
-    local on = false
-    sw.MouseButton1Click:Connect(function()
-        on = not on
-        Tween:Create(knob,TweenInfo.new(.2),{Position = on and UDim2.new(1,-24,0.5,-11) or UDim2.new(0,2,0.5,-11)}):Play()
-        Tween:Create(sw,TweenInfo.new(.2),{BackgroundColor3 = on and Color3.fromRGB(255,40,40) or Color3.fromRGB(70,70,70)}):Play()
-        callback(on)
+    icon.Parent = tab
+    
+    -- // TAB CONTENT FRAME
+    local content = Instance.new("Frame")
+    content.Size = UDim2.new(1, -80, 1, 0)
+    content.Position = UDim2.new(0, 80, 0, 0)
+    content.BackgroundColor3 = self.configuration.Theme.Background
+    content.Parent = self.window
+    
+    content.Visible = false
+    
+    -- // TAB INTERACTION
+    tab.MouseEnter:Connect(function()
+        TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
     end)
-
-    -- mini preview
-    icon.MouseButton1Click:Connect(function()
-        local prev = Instance.new("ImageLabel")
-        prev.Size = UDim2.new(0,80,0,80)
-        prev.Position = UDim2.new(0.5,-40,0.5,-40)
-        prev.Image = icon.Image
-        prev.BackgroundTransparency = 1
-        prev.ZIndex = 10
-        prev.Parent = card
-        Tween:Create(prev,TweenInfo.new(.25),{Size = UDim2.new(0,0,0,0)}):Play()
-        task.wait(.25)
-        prev:Destroy()
+    
+    tab.MouseLeave:Connect(function()
+        if tab ~= self.currentTab then
+            TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Background}):Play()
+        end
     end)
+    
+    tab.MouseButton1Click:Connect(function()
+        -- // HIDE PREVIOUS TABS
+        if self.currentTab then
+            self.currentTab.Visible = false
+        end
+        
+        -- // SHOW NEW TAB
+        content.Visible = true
+        self.currentTab = content
+        
+        -- // UPDATE UI
+        for _, t in ipairs(self.tabContainer:GetChildren()) do
+            if t:IsA("TextButton") then
+                TweenService:Create(t, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Background}):Play()
+            end
+        end
+        
+        TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
+        
+        -- // RUN CALLBACK
+        if callback then callback(content) end
+    end)
+    
+    -- // STORE TAB REFERENCE
+    table.insert(self.tabs, {button = tab, content = content})
+    
+    return content
 end
 
--------------------------------------------------
--- 7.  Toggle Functions
--------------------------------------------------
-local function toggleESP(on)
-    for _,plr in ipairs(Players:GetPlayers()) do
-        if plr~=LP and plr.Character then
-            local head = plr.Character:FindFirstChild("Head")
-            if head then
-                if on then
-                    local b = Instance.new("BillboardGui")
-                    b.Adornee = head
-                    b.Size = UDim2.new(0,200,0,50)
-                    b.AlwaysOnTop = true
-                    b.Parent = head
-                    local l = Instance.new("TextLabel")
-                    l.Size = UDim2.new(1,0,1,0)
-                    l.BackgroundTransparency = 1
-                    l.Text = plr.Name
-                    l.TextColor3 = Color3.new(1,0,0)
-                    l.Font = Enum.Font.SourceSansBold
-                    l.TextSize = 14
-                    l.Parent = b
-                else
-                    for _,v in ipairs(head:GetChildren()) do
-                        if v:IsA("BillboardGui") then v:Destroy() end
+-- // ELEMENT CREATION
+function VortxHub:createLabel(parent, text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -20, 0, 40)
+    label.Position = UDim2.new(0, 10, 0, 10)
+    label.Text = text
+    label.TextColor3 = self.configuration.Theme.Text
+    label.Font = Enum.Font.SourceSans
+    label.Parent = parent
+    
+    return label
+end
+
+function VortxHub:createButton(parent, text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 40)
+    button.Position = UDim2.new(0, 10, 0, 10)
+    button.Text = text
+    button.TextColor3 = self.configuration.Theme.Text
+    button.Font = Enum.Font.SourceSans
+    button.BackgroundColor3 = self.configuration.Theme.Primary
+    button.Parent = parent
+    
+    button.MouseButton1Click:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 0, 0)}):Play()
+        task.wait(0.2)
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
+        
+        if callback then callback() end
+    end)
+    
+    return button
+end
+
+function VortxHub:createToggle(parent, label, callback)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(1, -20, 0, 40)
+    toggleFrame.Position = UDim2.new(0, 10, 0, 10)
+    toggleFrame.BackgroundColor3 = self.configuration.Theme.Background
+    toggleFrame.Parent = parent
+    
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    toggleLabel.Text = label
+    toggleLabel.TextColor3 = self.configuration.Theme.Text
+    toggleLabel.Font = Enum.Font.SourceSans
+    toggleLabel.Parent = toggleFrame
+    
+    local toggleSwitch = Instance.new("Frame")
+    toggleSwitch.Size = UDim2.new(0, 50, 0, 25)
+    toggleSwitch.Position = UDim2.new(0.6, 0, 0.5, -12.5)
+    toggleSwitch.BackgroundColor3 = self.configuration.Theme.Secondary
+    toggleSwitch.CornerRadius = UDim.new(0, 15)
+    toggleSwitch.Parent = toggleFrame
+    
+    local toggleKnob = Instance.new("Frame")
+    toggleKnob.Size = UDim2.new(0, 25, 0, 25)
+    toggleKnob.Position = UDim2.new(0, 0, 0, 0)
+    toggleKnob.BackgroundColor3 = self.configuration.Theme.Primary
+    toggleKnob.CornerRadius = UDim.new(0, 15)
+    toggleKnob.Parent = toggleSwitch
+    
+    local isEnabled = false
+    
+    toggleSwitch.MouseButton1Click:Connect(function()
+        isEnabled = not isEnabled
+        
+        if isEnabled then
+            TweenService:Create(toggleSwitch, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary}):Play()
+            TweenService:Create(toggleKnob, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Text, Position = UDim2.new(1, -25, 0, 0)}):Play()
+        else
+            TweenService:Create(toggleSwitch, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Secondary}):Play()
+            TweenService:Create(toggleKnob, TweenInfo.new(0.2), {BackgroundColor3 = self.configuration.Theme.Primary, Position = UDim2.new(0, 0, 0, 0)}):Play()
+        end
+        
+        if callback then callback(isEnabled) end
+    end)
+    
+    return toggleFrame
+end
+
+function VortxHub:createSlider(parent, label, min, max, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(1, -20, 0, 40)
+    sliderFrame.Position = UDim2.new(0, 10, 0, 10)
+    sliderFrame.BackgroundColor3 = self.configuration.Theme.Background
+    sliderFrame.Parent = parent
+    
+    local sliderLabel = Instance.new("TextLabel")
+    sliderLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    sliderLabel.Text = label
+    sliderLabel.TextColor3 = self.configuration.Theme.Text
+    sliderLabel.Font = Enum.Font.SourceSans
+    sliderLabel.Parent = sliderFrame
+    
+    local sliderTrack = Instance.new("Frame")
+    sliderTrack.Size = UDim2.new(0.6, 0, 0, 10)
+    sliderTrack.Position = UDim2.new(0.6, 0, 0.5, -5)
+    sliderTrack.BackgroundColor3 = self.configuration.Theme.Secondary
+    sliderTrack.CornerRadius = UDim.new(0, 5)
+    sliderTrack.Parent = sliderFrame
+    
+    local sliderKnob = Instance.new("Frame")
+    sliderKnob.Size = UDim2.new(0, 25, 0, 25)
+    sliderKnob.Position = UDim2.new(0, 0, 0.5, -12.5)
+    sliderKnob.BackgroundColor3 = self.configuration.Theme.Primary
+    sliderKnob.CornerRadius = UDim.new(0, 15)
+    sliderKnob.Parent = sliderTrack
+    
+    local sliderValue = Instance.new("TextLabel")
+    sliderValue.Size = UDim2.new(0.3, 0, 0, 25)
+    sliderValue.Position = UDim2.new(0.3, 0, 0, 15)
+    sliderValue.Text = min
+    sliderValue.TextColor3 = self.configuration.Theme.Text
+    sliderValue.Font = Enum.Font.SourceSans
+    sliderValue.Parent = sliderFrame
+    
+    local currentValue = min
+    
+    sliderTrack.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local position = input.Position.X - sliderTrack.AbsolutePosition.X
+            local percentage = math.clamp(position / sliderTrack.AbsoluteSize.X, 0, 1)
+            currentValue = math.floor(min + (max - min) * percentage)
+            
+            sliderValue.Text = currentValue
+            sliderKnob.Position = UDim2.new(percentage, -12.5, 0.5, -12.5)
+            
+            if callback then callback(currentValue) end
+        end
+    end)
+    
+    return sliderFrame
+end
+
+-- // NOTIFICATION SYSTEM
+function VortxHub:showNotification(text, duration)
+    local notification = Instance.new("TextLabel")
+    notification.Size = UDim2.new(0, 300, 0, 50)
+    notification.Position = UDim2.new(0.5, -150, 0.5, -250)
+    notification.Text = text
+    notification.TextColor3 = self.configuration.Theme.Text
+    notification.Font = Enum.Font.SourceSans
+    notification.BackgroundTransparency = 0.7
+    notification.BackgroundColor3 = self.configuration.Theme.Background
+    notification.CornerRadius = UDim.new(0, 10)
+    notification.Parent = self.ui
+    
+    TweenService:Create(notification, TweenInfo.new(0.3), {TextTransparency = 0, BackgroundTransparency = 0.3}):Play()
+    
+    table.insert(self.notifications, notification)
+    
+    task.wait(duration or 3)
+    TweenService:Create(notification, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+    
+    task.wait(0.3)
+    for i, v in ipairs(self.notifications) do
+        if v == notification then
+            table.remove(self.notifications, i)
+            break
+        end
+    end
+    notification:Destroy()
+end
+
+-- // CONFIGURATION SYSTEM
+function VortxHub:saveConfig(name)
+    local config = {
+        windowSize = self.window.Size,
+        windowPosition = self.window.Position,
+        elements = {}
+    }
+    
+    for _, element in ipairs(self.elements) do
+        config.elements[element.name] = {
+            position = element.Position,
+            size = element.Size,
+            value = element.value or false
+        }
+    end
+    
+    self.configs[name] = config
+    self:showNotification("Config saved: " .. name, 3)
+end
+
+function VortxHub:loadConfig(name)
+    if not self.configs[name] then return end
+    
+    local config = self.configs[name]
+    self.window.Size = config.windowSize
+    self.window.Position = config.windowPosition
+    
+    for elementName, elementConfig in pairs(config.elements) do
+        for _, element in ipairs(self.elements) do
+            if element.name == elementName then
+                element.Position = elementConfig.position
+                element.Size = elementConfig.size
+                if elementConfig.value ~= nil then
+                    if element.toggle then
+                        element.toggle:setState(elementConfig.value)
                     end
                 end
+                break
             end
         end
     end
+    
+    self:showNotification("Config loaded: " .. name, 3)
 end
 
-local function toggleFly(on)
-    Humanoid.WalkSpeed = on and 120 or 16
-    Humanoid.JumpPower = on and 120 or 50
+-- // INTRO ANIMATION
+function VortxHub:startIntro()
+    if not self.configuration.IntroEnabled then return end
+    
+    local introScreen = Instance.new("ScreenGui")
+    introScreen.Name = "VortxIntro"
+    introScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    local introFrame = Instance.new("Frame")
+    introFrame.Size = UDim2.new(1, 0, 1, 0)
+    introFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    introFrame.Parent = introScreen
+    
+    local introText = Instance.new("TextLabel")
+    introText.Size = UDim2.new(0.8, 0, 0.8, 0)
+    introText.Position = UDim2.new(0.1, 0, 0.1, 0)
+    introText.Text = ""
+    introText.TextColor3 = self.configuration.Theme.Primary
+    introText.Font = Enum.Font.Bauhaus
+    introText.TextScaled = true
+    introText.TextStrokeTransparency = 0.5
+    introText.Parent = introFrame
+    
+    local letters = {"V", "O", "R", "T", "X"}
+    local delay = 0
+    
+    for _, letter in ipairs(letters) do
+        delay += 0.5
+        task.spawn(function()
+            task.wait(delay)
+            introText.Text = introText.Text .. letter
+        end)
+    end
+    
+    task.wait(3)
+    introScreen:Destroy()
 end
 
-local function toggleNoClip(on)
-    while on do
-        for _,v in ipairs(Character:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
+-- // MOBILE SUPPORT
+function VortxHub:enableMobileSupport()
+    if not self.configuration.MobileSupport then return end
+    
+    local touchGui = Instance.new("TouchGui")
+    touchGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    local touchFrame = Instance.new("Frame")
+    touchFrame.Size = UDim2.new(1, 0, 1, 0)
+    touchFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    touchFrame.BackgroundTransparency = 1
+    touchFrame.Parent = touchGui
+    
+    touchFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            self:enableDragging(touchFrame)
         end
-        task.wait()
+    end)
+end
+
+-- // PUBLIC METHODS
+function VortxHub:Create()
+    if game.Players.LocalPlayer and 
+       game.Players.LocalPlayer:FindFirstChild("PlayerGui") then
+        game.Players.LocalPlayer.PlayerGui:FindFirstChild("VortxHubUI"):Destroy()
+        self.ui.Parent = game.Players.LocalPlayer.PlayerGui
+    end
+    
+    self:startIntro()
+    self:enableMobileSupport()
+    
+    return self.ui
+end
+
+function VortxHub:GetTheme()
+    return self.configuration.Theme
+end
+
+function VortxHub:SetTheme(theme)
+    self.configuration.Theme = theme
+    self:updateUI()
+end
+
+function VortxHub:updateUI()
+    -- // UPDATE COLORS
+    self.window.BackgroundColor3 = self.configuration.Theme.Background
+    self.tabContainer.BackgroundColor3 = self.configuration.Theme.Secondary
+    for _, tab in ipairs(self.tabs) do
+        tab.button.BackgroundColor3 = self.configuration.Theme.Background
+        tab.content.BackgroundColor3 = self.configuration.Theme.Background
     end
 end
 
-local function toggleAutoCrate(on)
-    while on do
-        if Rem.opencrate then Rem.opencrate:FireServer() end
-        task.wait(0.1)
-    end
-end
+-- // README DOCUMENTATION
+local readme = [[
+# VortxHub Interface Suite Documentation
 
-local function toggleInfMoney(on)
-    if on and Rem.setmoney then Rem.setmoney:FireServer(9e9) end
-end
+## Table of Contents
+1. Introduction
+2. Basic Usage
+3. Component Reference
+4. Configuration
+5. Examples
 
-local function toggle500Luck(on)
-    if on and Rem.setluck then Rem.setluck:FireServer(500) end
-end
+## 1. Introduction
+VortxHub Interface Suite is a modern, customizable UI framework for Roblox. It provides a comprehensive set of UI components with smooth animations and responsive design.
 
-local function toggle500Money(on)
-    if on and Rem.setmultiplier then Rem.setmultiplier:FireServer(500) end
-end
+## 2. Basic Usage
 
-local function toggleAutoCollect(on)
-    while on do
-        for _,v in ipairs(workspace:GetDescendants()) do
-            if v.Name:lower():find("money") then
-                firetouchinterest(Character:FindFirstChild("HumanoidRootPart"), v, 0)
-            end
-        end
-        task.wait(0.2)
-    end
-end
-
-local function toggleAutoTrade(on)
-    while on do
-        if Rem.autotrade then Rem.autotrade:FireServer() end
-        task.wait(3)
-    end
-end
-
--------------------------------------------------
--- 8.  Populate
--------------------------------------------------
-addToggle("Auto Crate",    6031075931, toggleAutoCrate)
-addToggle("ESP",           6031280882, toggleESP)
-addToggle("Fly / Speed",   6031225810, toggleFly)
-addToggle("NoClip",        6035056483, toggleNoClip)
-addToggle("∞ Money",       6034767619, toggleInfMoney)
-addToggle("500× Luck",     6031225810, toggle500Luck)
-addToggle("500× Money",    6034767619, toggle500Money)
-addToggle("Auto Collect",  6031075931, toggleAutoCollect)
-addToggle("Auto Trade",    6035056483, toggleAutoTrade)
-
-print("✅ VORTX HUB loaded – My Market ready")
+### Initialize the UI
+```lua
+local VortxHub = require(game.ReplicatedStorage:WaitForChild("VortxHub"))
+local ui = VortxHub.new()
+ui:Create()
